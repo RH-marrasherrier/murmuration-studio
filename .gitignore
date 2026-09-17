@@ -1,0 +1,7 @@
+# rendered output and its sidecars
+*.gif
+*.mp4
+*.params.json
+# transient capture dirs
+frames/
+.DS_Store
