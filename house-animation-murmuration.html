@@ -482,7 +482,18 @@ if(UI){
   })(performance.now());
   sync(); draw();
 
-  /* ---------- export ---------- */
+  /* ---------- export ----------
+     Only available when served by studio-server.py. On a static host (e.g.
+     GitHub Pages) there is no render pipeline, so the section is replaced with
+     a note instead of offering a button that cannot work. */
+  const LOCAL = ["localhost","127.0.0.1"].includes(location.hostname);
+  if(!LOCAL){
+    const fs=$("b_export").closest("fieldset");
+    fs.innerHTML='<legend>Export</legend><div class="hint">Exporting renders via '
+      + 'headless Chrome and ffmpeg, so it only works when the studio is run '
+      + 'locally. Everything above is live \u2014 tune freely, then share the '
+      + 'settings shown in the panel.</div>';
+  }
   function query(){
     return KEYS.map(k=>k+"="+(k==="count"||k==="clumps"||k==="seed"||k==="dotSize"
       ? Math.round(S[k]) : S[k])).join("&") + "&colour=" + S.colour + "&mode=" + S.mode;
