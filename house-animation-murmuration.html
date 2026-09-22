@@ -253,14 +253,15 @@ const q = new URLSearchParams(location.search);
 const num = (k) => q.has(k) ? parseFloat(q.get(k)) : D[k];
 const S = {
   w: 995, h: 1066, bg: "#060606", houseFade: 0.25,
-  t: { T1:[0.25,1.45], T2:[1.70,2.90], T3:[3.15,4.35],
-       T4:[4.60,5.80], T5:[6.05,7.25], T6:[7.50,8.70] },
+  // Each device gets its own short beat: they fade in 0.75s apart rather than
+  // 1.45s, and the time saved goes to the energy flow at the end.
+  t: { T1:[0.25,1.45], T2:[1.60,2.20], T3:[2.35,2.95],
+       T4:[3.10,3.70], T5:[3.95,5.15], T6:[5.40,6.60] },
   total: 12.00,
   homePos: { floor2:[341,374.3], roof1:[199,494.9], roof2:[326,337.0] },
   expPos:  { floor2:[341,194],   roof1:[199,278],   roof2:[325,77] },
   arrive:  { solar:[297,373], battery:[223,688], car:[400,731], ac:[741,723], thermostat:[714,612] },
   aligned: { solar:[315,400], battery:[223,569], car:[400,676], ac:[741,615], thermostat:[714,526] },
-  enter:   { car:[1160,1111], battery:[-177,488], solar:[297,-170] },
   circuitStartFrac: 0.37476,
   count:num("count"), dotSize:num("dotSize"), dotAlpha:num("dotAlpha"),
   colour:(q.get("colour")||D.colour),
@@ -298,6 +299,14 @@ function frame(s){
 
 /* ---- particles. Per-particle speed is stored as a FACTOR so the speed
    slider is live and does not force a rebuild. ---- */
+/* ?loop=1 makes the swarm exactly periodic so the video can loop with no
+   visible jump. That needs two things: every particle moving at the same
+   speed (so one lap returns them all to their start), and each wobble
+   frequency snapped to a whole number of cycles per lap. Loop length is
+   then simply LEN / speed. */
+const LOOPMODE = q.get("loop") === "1";
+function loopSeconds(){ return LEN / S.speed; }
+
 let P=[];
 function buildParticles(){
   const rnd=mulberry32(Math.round(S.seed)*7919+13);
@@ -310,10 +319,16 @@ function buildParticles(){
       ? (Math.floor(rnd()*Math.max(1,Math.round(S.clumps)))*LEN/Math.max(1,Math.round(S.clumps)))
         + gauss()*S.clumpSigma
       : rnd()*LEN;
-    P.push({ s0,
-      spdF: 1 - S.speedVar/2 + rnd()*S.speedVar,
+    let spdF = 1 - S.speedVar/2 + rnd()*S.speedVar;
+    let wobHz = 0.5 + rnd()*1.4;
+    if(LOOPMODE){
+      spdF = 1;                                      // uniform speed -> one lap returns all
+      const T = loopSeconds();
+      wobHz = Math.max(1, Math.round(wobHz*T)) / T;  // whole cycles per lap
+    }
+    P.push({ s0, spdF,
       off: (rnd()*2-1)*lerp(S.spreadMin,S.spreadMax,u*u),
-      wob: rnd()*Math.PI*2, wobHz: 0.5+rnd()*1.4 });
+      wob: rnd()*Math.PI*2, wobHz });
   }
 }
 buildParticles();
@@ -379,28 +394,29 @@ function render(t){
     for(const id of ["solar","battery","car","ac","thermostat"])
       place($(id),S.aligned[id][0],S.aligned[id][1],1);
   } else {
-    const arrival=(id,tr,from,ease)=>{
-      const p=ease(seg(T,tr[0],tr[1]));
+    // Every device fades in where it lands, the way the HVAC always has: no
+    // travel, just a 0.6s ramp starting at its own beat.
+    const fadeIn=(id,from,to)=>{
       const av=S.arrive[id], bv=S.aligned[id];
-      const ax=lerp(from[0],av[0],p), ay=lerp(from[1],av[1],p);
-      place($(id),lerp(ax,bv[0],align),lerp(ay,bv[1],align),T<tr[0]?0:1);
+      place($(id),lerp(av[0],bv[0],align),lerp(av[1],bv[1],align),seg(T,from,to));
     };
-    const appear=seg(T,lerp(tt.T1[0],tt.T1[1],0.5),tt.T1[1]);
-    for(const id of ["ac","thermostat"]){
-      const av=S.arrive[id], bv=S.aligned[id];
-      place($(id),lerp(av[0],bv[0],align),lerp(av[1],bv[1],align),appear);
-    }
-    arrival("car",tt.T2,S.enter.car,easeOut);
-    arrival("solar",tt.T3,S.enter.solar,easeOut);
-    arrival("battery",tt.T4,S.enter.battery,easeOut);
+    const t1mid=lerp(tt.T1[0],tt.T1[1],0.5);
+    fadeIn("ac",t1mid,tt.T1[1]);
+    fadeIn("thermostat",t1mid,tt.T1[1]);
+    fadeIn("car",tt.T2[0],tt.T2[0]+0.35);
+    fadeIn("solar",tt.T3[0],tt.T3[0]+0.35);
+    fadeIn("battery",tt.T4[0],tt.T4[0]+0.35);
   }
   drawSwarm(T);
 }
 
 /* ---------- drive ---------- */
 const SEG=[parseFloat(q.get("from")??0), parseFloat(q.get("to")??S.total)];
-const bg=q.get("bg")??S.bg;
+const ONLY=q.get("only");          // "swarm" = dots on pure black, for overlay use
+const bg=q.get("bg")??(ONLY==="swarm"?"#000000":S.bg);
 $("stage").style.background = bg==="none" ? "transparent" : bg;
+if(ONLY==="swarm")
+  for(const el of document.querySelectorAll("#stage img")) el.style.display="none";
 const at=t=>render((SEG[0]+t*(SEG[1]-SEG[0]))/S.total);
 
 const UI = !q.has("t") && q.get("ui")!=="0";
@@ -494,6 +510,7 @@ if(UI){
       + 'locally. Everything above is live \u2014 tune freely, then share the '
       + 'settings shown in the panel.</div>';
   }
+
   function query(){
     return KEYS.map(k=>k+"="+(k==="count"||k==="clumps"||k==="seed"||k==="dotSize"
       ? Math.round(S[k]) : S[k])).join("&") + "&colour=" + S.colour + "&mode=" + S.mode;

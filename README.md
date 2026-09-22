@@ -1,11 +1,17 @@
-# Murmuration studio
+# Animation studios
 
-A local tuning studio for the Renew Home house-build animation — an isometric
-home that opens up, gains devices, and then has energy flow around a circuit as
-a swarm of drifting dots.
+Local tuning studios for the Renew Home house-build animation — an isometric
+home that opens up, gains devices, and then has energy flow around a circuit.
 
-Sliders change the swarm live in the browser; the export button runs the real
-render pipeline at full quality with whatever is on screen.
+Two endings share the same build-up:
+
+- **Glow studio** (`house-animation-glow.html`) — energy travels the circuit as
+  pulses, each device emitting in turn.
+- **Murmuration studio** (`house-animation-murmuration.html`) — energy travels
+  as a swarm of drifting dots.
+
+Sliders change the animation live in the browser; the export button runs the
+real render pipeline at full quality with whatever is on screen.
 
 ![controls](docs/panel.png)
 
@@ -16,11 +22,44 @@ render pipeline at full quality with whatever is on screen.
 python3 /tmp/murm-studio/studio-server.py
 ```
 
-Then open <http://127.0.0.1:3477/>.
+Then open <http://127.0.0.1:3477/> and pick a studio.
 
 Requires `python3`, `ffmpeg`, and Google Chrome at the standard macOS path.
 
-## Controls
+## Glow studio controls
+
+**Circuit opacity after pulses start** — the line draws itself in at full
+strength, then settles to this level once the pulses begin, so the pulses read
+as the event and the line as the wiring.
+
+**Pulses come from** — *Devices* or *Loop*. In Devices mode the five devices
+take turns emitting, in the order HVAC, solar, car, battery, thermostat. Each
+emission travels out along the circuit in **both** directions and stops at the
+next device, where it is absorbed: the head halts on arrival while the tail
+keeps closing, so a pulse grows out of the sender and shrinks into the
+receiver. Loop mode instead sends evenly spaced pulses around the whole
+circuit.
+
+Device positions were measured against the circuit rather than estimated —
+every device sits within 3.7px of the path, so pulses genuinely appear to leave
+the device. The legs they travel:
+
+| leg | length | travelled by |
+|---|---|---|
+| thermostat ↔ HVAC | 210px | HVAC, backward |
+| HVAC ↔ car | 343px | HVAC, forward |
+| car ↔ battery | 244px | car, forward |
+| battery ↔ solar | 272px | battery, forward |
+| solar ↔ thermostat | 372px | solar, forward |
+
+**Pulse speed**, **take turns every**, and **pulse length** set the pacing.
+Reach is not a control — the geometry above decides it.
+
+Solar's forward leg crosses the point where the circuit path opens. SVG dashes
+do not wrap across that seam, so a pulse spanning it is drawn as two dashes
+that together total the right length.
+
+## Murmuration studio controls
 
 **Dots** — density (500–24,000), size (1–5px), opacity, and colour (white or
 `#9BB8FA` powder blue). Size 1 matches the house wireframe, which measures 1px
@@ -53,11 +92,10 @@ it — 12s is the authored pace.
 
 ## How it works
 
-`house-animation-murmuration.html` is the whole animation. Its `render(t)` is a
-pure function of `t` in `[0,1]`: no timers, no CSS transitions, no dependence on
-frame history. That is what makes headless capture reproducible — each frame is
-rendered by a separate Chrome process, and identical input must give identical
-output.
+Each studio is one self-contained file. Its `render(t)` is a pure function of
+`t` in `[0,1]`: no timers, no CSS transitions, no dependence on frame history.
+That is what makes headless capture reproducible — each frame is rendered by a
+separate Chrome process, and identical input must give identical output.
 
 The same file serves the live studio and the renderer:
 
@@ -68,7 +106,13 @@ The same file serves the live studio and the renderer:
 | `?ui=0` | suppress the panel |
 | `?from=&to=` | render a slice of the timeline |
 | `?bg=%23060606` / `?bg=none` | backdrop, or transparent |
-| `?count=&dotSize=&speed=…` | every swarm parameter |
+| `?count=&dotSize=&speed=…` | every swarm parameter (murmuration) |
+| `?source=&showLine=&lineDim=…` | every pulse parameter (glow) |
+
+Parameters no longer shown in the glow panel — line weight, colour, glow
+spread and weight, pulse weight, house fade — are baked to their chosen values
+but still accept a URL override, so a render can deviate without the panel
+growing back.
 
 `render-gif.sh` walks `?t=` across the timeline with headless Chrome, then
 assembles the frames with ffmpeg. `FRAMES_DIR` caches one capture so the GIF and

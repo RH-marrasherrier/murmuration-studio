@@ -21,8 +21,7 @@ import uuid
 # Served tree. Kept explicit because the launcher runs this script from
 # /tmp (macOS blocks it from opening scripts under ~/Desktop), while the
 # animation and its layers live in the project folder.
-ROOT = os.environ.get("STUDIO_ROOT",
-    "/Users/marrasherrier/Desktop/claude/investor deck animations")
+ROOT = os.environ.get("STUDIO_ROOT", os.path.dirname(os.path.abspath(__file__)))
 PORT = 3477
 
 JOBS = {}
@@ -34,7 +33,7 @@ def set_job(jid, **kw):
         JOBS.setdefault(jid, {}).update(kw)
 
 
-def run_export(jid, query, fps, dur, fmt, name):
+def run_export(jid, query, fps, dur, fmt, name, source):
     """Render one or both formats, sharing a single frame capture."""
     frames = tempfile.mkdtemp(prefix="murm-frames-")
     try:
@@ -54,7 +53,7 @@ def run_export(jid, query, fps, dur, fmt, name):
             out = f"{name}.{ext}"
             set_job(jid, message=f"encoding {ext.upper()} ({i+1}/{len(exts)})…")
             proc = subprocess.Popen(
-                ["./render-gif.sh", "house-animation-murmuration.html", out],
+                ["./render-gif.sh", source, out],
                 cwd=ROOT, env=env, stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT, text=True, bufsize=1)
             # render-gif.sh reports "frame N/M" on a \r-updated line
@@ -115,11 +114,39 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             with JOBS_LOCK:
                 job = dict(JOBS.get(jid, {"state": "unknown"}))
             return self._json(200, job)
-        if self.path == "/" or self.path.startswith("/?"):
+        if self.path == "/":
+            return self._index()
+        if self.path.startswith("/?"):
             self.path = "/house-animation-murmuration.html" + self.path[1:]
         return super().do_GET()
 
+    def _index(self):
+        body = b"""<!DOCTYPE html><meta charset="utf-8"><title>Animation studios</title>
+<style>body{background:#0b0b0d;color:#e8e8ea;font:15px/1.6 system-ui,sans-serif;
+padding:48px}a{color:#7fb0ff;display:block;margin:10px 0;font-size:17px}
+p{color:#8b8b93}</style>
+<h1>Animation studios</h1>
+<p>Live tuning for the house-build animation. Changes apply immediately; export
+renders at full quality.</p>
+<a href="/house-animation-glow.html">Glow studio &mdash; the drawn circuit</a>
+<a href="/house-animation-murmuration.html">Murmuration studio &mdash; the particle swarm</a>
+"""
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_POST(self):
+        # /save lets the page hand structured data back to disk (used when
+        # baking Lottie keyframes out of the live animation)
+        if self.path.startswith("/save/"):
+            name = re.sub(r"[^A-Za-z0-9._-]", "-", self.path[6:]) or "data.json"
+            n = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(n)
+            with open(os.path.join(ROOT, name), "wb") as f:
+                f.write(body)
+            return self._json(200, {"saved": name, "bytes": len(body)})
         if self.path != "/export":
             return self._json(404, {"error": "not found"})
         n = int(self.headers.get("Content-Length", 0))
@@ -140,8 +167,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         jid = uuid.uuid4().hex[:10]
         set_job(jid, state="queued", message="queued", frame=0, total=1, outputs=[])
+        # only the animations in this directory may be rendered
+        source = req.get("source", "house-animation-murmuration.html")
+        if source not in ("house-animation-murmuration.html",
+                          "house-animation-glow.html"):
+            return self._json(400, {"error": "unknown source"})
         threading.Thread(target=run_export,
-                         args=(jid, req.get("query", ""), fps, dur, fmt, name),
+                         args=(jid, req.get("query", ""), fps, dur, fmt, name, source),
                          daemon=True).start()
         return self._json(200, {"job": jid})
 
