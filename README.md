@@ -1,14 +1,8 @@
-# Animation studios
+# Glow studio
 
-Local tuning studios for the Renew Home house-build animation — an isometric
-home that opens up, gains devices, and then has energy flow around a circuit.
-
-Two endings share the same build-up:
-
-- **Glow studio** (`house-animation-glow.html`) — energy travels the circuit as
-  pulses, each device emitting in turn.
-- **Murmuration studio** (`house-animation-murmuration.html`) — energy travels
-  as a swarm of drifting dots.
+A local tuning studio for the Renew Home house-build animation — an isometric
+home that opens up, gains devices, then has energy travel around a circuit as
+pulses, each device emitting in turn.
 
 Sliders change the animation live in the browser; the export button runs the
 real render pipeline at full quality with whatever is on screen.
@@ -19,14 +13,18 @@ real render pipeline at full quality with whatever is on screen.
 
 ```bash
 ./studio-setup.sh          # stages a working copy into /tmp (see note below)
-python3 /tmp/murm-studio/studio-server.py
+python3 /tmp/glow-studio/studio-server.py
 ```
 
-Then open <http://127.0.0.1:3477/> and pick a studio.
+Then open <http://127.0.0.1:3477/>.
 
 Requires `python3`, `ffmpeg`, and Google Chrome at the standard macOS path.
 
-## Glow studio controls
+## Controls
+
+**Line weight** and **glow weight** — the width of the circuit's bright core
+and of the halo behind it. Line weight also sets the width of each pulse's
+core, so a pulse always reads as riding the line rather than sitting beside it.
 
 **Circuit opacity after pulses start** — the line draws itself in at full
 strength, then settles to this level once the pulses begin, so the pulses read
@@ -59,29 +57,6 @@ Solar's forward leg crosses the point where the circuit path opens. SVG dashes
 do not wrap across that seam, so a pulse spanning it is drawn as two dashes
 that together total the right length.
 
-## Murmuration studio controls
-
-**Dots** — density (500–24,000), size (1–5px), opacity, and colour (white or
-`#9BB8FA` powder blue). Size 1 matches the house wireframe, which measures 1px
-nominal: 55% of its cross-sections render as 1px and 40% spill to 2px from
-antialiasing.
-
-**Motion** — speed along the path, speed *spread* (how much particles bunch as
-they drift apart), and perpendicular wobble.
-
-**Shape of the swarm** — band width, number of travelling clumps, clumpiness,
-and a seed that reshuffles the whole arrangement.
-
-Clumpiness is the one that matters most. Every dot shares a single size and
-opacity, so brightness cannot signal anything — density is the only channel
-left to carry the sense of flow. Clumps are what make it read as energy moving
-rather than a static dotted line.
-
-**Sequence** — devices arrive one by one, or start all present. "All present"
-also opens the house on frame one, because devices that sit on walls would
-otherwise float over a closed roof, and it moves the swarm sweep to the start so
-the clip is almost entirely energy flow.
-
 **Export** — name, format (GIF / MP4 / both), frame rate, and playback length.
 Progress is reported frame by frame. Each export also writes a
 `<name>.params.json` sidecar, so any file you keep carries the settings that
@@ -92,10 +67,11 @@ it — 12s is the authored pace.
 
 ## How it works
 
-Each studio is one self-contained file. Its `render(t)` is a pure function of
-`t` in `[0,1]`: no timers, no CSS transitions, no dependence on frame history.
-That is what makes headless capture reproducible — each frame is rendered by a
-separate Chrome process, and identical input must give identical output.
+`house-animation-glow.html` is the whole animation. Its `render(t)` is a pure
+function of `t` in `[0,1]`: no timers, no CSS transitions, no dependence on
+frame history. That is what makes headless capture reproducible — each frame is
+rendered by a separate Chrome process, and identical input must give identical
+output.
 
 The same file serves the live studio and the renderer:
 
@@ -106,13 +82,11 @@ The same file serves the live studio and the renderer:
 | `?ui=0` | suppress the panel |
 | `?from=&to=` | render a slice of the timeline |
 | `?bg=%23060606` / `?bg=none` | backdrop, or transparent |
-| `?count=&dotSize=&speed=…` | every swarm parameter (murmuration) |
-| `?source=&showLine=&lineDim=…` | every pulse parameter (glow) |
+| `?source=&showLine=&lineDim=…` | every pulse parameter |
 
-Parameters no longer shown in the glow panel — line weight, colour, glow
-spread and weight, pulse weight, house fade — are baked to their chosen values
-but still accept a URL override, so a render can deviate without the panel
-growing back.
+Parameters not shown in the panel — line colour, glow spread, pulse weight,
+house fade — are baked to their chosen values but still accept a URL override,
+so a render can deviate without the panel growing back.
 
 `render-gif.sh` walks `?t=` across the timeline with headless Chrome, then
 assembles the frames with ffmpeg. `FRAMES_DIR` caches one capture so the GIF and
@@ -127,10 +101,9 @@ Two rendering details worth preserving:
   distinct colours, so they fit GIF's 256-colour table losslessly and a dither
   pattern only sprays noise over the flat background. Measured: `dither=bayer`
   gave RMSE 3.54 against source, `dither=none` gave 0.08 — and a smaller file.
-- **Dots are snapped to whole pixels.** At fractional positions a 1px dot
-  spreads across two pixels at partial coverage, so dots differ in apparent
-  size *and* brightness. Snapping makes every dot render at exactly the same
-  value.
+- **A pulse crossing the path's seam is drawn as two dashes.** The circuit is
+  an open path and SVG dashes do not wrap across its ends, so a span over that
+  point is written as two dash runs totalling the right length.
 
 ## Layers
 

@@ -13,7 +13,7 @@
   body.ui { background:#0b0b0d; font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
   body.ui #wrap { display:flex; gap:14px; padding:14px; align-items:flex-start; }
   body.ui #scaler { transform-origin:top left; flex:0 0 auto; }
-  body.ui #panel { width:264px; flex:0 0 auto; background:var(--panel);
+  body.ui #panel { width:528px; flex:0 0 auto; background:var(--panel);
                    border:1px solid var(--line); border-radius:10px; padding:12px 14px;
                    max-height:calc(100vh - 36px); overflow-y:auto; }
   body:not(.ui) #panel { display:none; }
@@ -24,7 +24,7 @@
   .row { display:flex; align-items:center; gap:8px; margin:7px 0; }
   .row label { flex:1; font-size:12px; }
   .row output { width:52px; text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); font-size:11.5px; }
-  input[type=range] { width:96px; accent-color:#3C77FF; }
+  input[type=range] { width:300px; accent-color:#3C77FF; }
   input[type=text], select { background:#1d1d21; color:var(--ink); border:1px solid var(--line);
     border-radius:6px; padding:5px 7px; font:12px inherit; width:100%; box-sizing:border-box; }
   .seg { display:flex; gap:6px; }
@@ -39,8 +39,6 @@
   #bar i { display:block; height:100%; width:0; background:#3C77FF; }
   #files { margin-top:8px; font-size:11.5px; }
   .hint { color:var(--dim); font-size:11px; margin-top:6px; }
-  .nav { margin-top:12px; font-size:11.5px; }
-  .nav a { color:#7fb0ff; }
 </style>
 </head>
 <body>
@@ -95,6 +93,12 @@
     <div class="sub">Changes apply live. Export renders at full quality.</div>
 
     <fieldset><legend>Circuit line</legend>
+      <div class="row"><label for="c_lineW">Line weight</label>
+        <input type="range" id="c_lineW" min="1" max="12" step="0.5"><output id="o_lineW"></output></div>
+      <div class="row"><label for="c_glowStroke">Glow weight</label>
+        <input type="range" id="c_glowStroke" min="0" max="24" step="0.5"><output id="o_glowStroke"></output></div>
+      <div class="hint">Line weight also sets the width of each pulse's bright
+        core, so a pulse always reads as riding the line.</div>
       <div class="row"><label for="c_lineDim">Circuit opacity after pulses start</label>
         <input type="range" id="c_lineDim" min="0" max="1" step="0.05"><output id="o_lineDim"></output></div>
     </fieldset>
@@ -133,7 +137,6 @@
       <div class="seg" style="margin-bottom:8px">
         <button id="b_play" aria-pressed="true">Pause</button>
         <button id="b_flow">Flow only</button>
-        <button id="b_reset">Reset</button>
       </div>
       <div class="row"><label for="c_scrub">Time</label>
         <input type="range" id="c_scrub" min="0" max="1" step="0.002"><output id="o_scrub"></output></div>
@@ -156,7 +159,6 @@
       <div class="hint">Playback time-scales the whole sequence; 12s is the authored pace.</div>
     </fieldset>
 
-    <div class="nav"><a href="/house-animation-murmuration.html">&rarr; Murmuration studio</a></div>
   </div>
 </div>
 
@@ -437,9 +439,10 @@ if(UI){
   };
   addEventListener("resize",fit); fit();
 
-  const KEYS=["pulses","pulseLen","cycles","pulseSpeed","emitEvery","lineDim"];
+  const KEYS=["lineW","glowStroke","pulses","pulseLen","cycles","pulseSpeed","emitEvery","lineDim"];
   const REPOOL=new Set(["pulseSpeed","emitEvery","pulseLen"]);
-  const FMT={ pulses:v=>Math.round(v), pulseLen:v=>Math.round(v)+"px",
+  const FMT={ lineW:v=>v+"px", glowStroke:v=>v+"px",
+              pulses:v=>Math.round(v), pulseLen:v=>Math.round(v)+"px",
               cycles:v=>Math.round(v)+"x", lineDim:v=>Math.round(v*100)+"%",
               pulseSpeed:v=>Math.round(v), emitEvery:v=>v.toFixed(2)+"s" };
   let playing=true, flowOnly=false, t0=performance.now(), tNow=0;
@@ -477,9 +480,6 @@ if(UI){
   $("b_flow").addEventListener("click",()=>{
     flowOnly=!flowOnly; $("b_flow").setAttribute("aria-pressed",flowOnly);
     t0=performance.now(); tNow=0;
-  });
-  $("b_reset").addEventListener("click",()=>{
-    Object.assign(S,D); applyStyle(); sync(); draw();
   });
   $("c_scrub").addEventListener("input",e=>{
     playing=false; $("b_play").textContent="Play"; tNow=parseFloat(e.target.value); draw();
