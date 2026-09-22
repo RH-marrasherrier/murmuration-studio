@@ -30,13 +30,11 @@ core, so a pulse always reads as riding the line rather than sitting beside it.
 strength, then settles to this level once the pulses begin, so the pulses read
 as the event and the line as the wiring.
 
-**Pulses come from** — *Devices* or *Loop*. In Devices mode the five devices
-take turns emitting, in the order HVAC, solar, car, battery, thermostat. Each
-emission travels out along the circuit in **both** directions and stops at the
-next device, where it is absorbed: the head halts on arrival while the tail
-keeps closing, so a pulse grows out of the sender and shrinks into the
-receiver. Loop mode instead sends evenly spaced pulses around the whole
-circuit.
+The five devices take turns emitting, in the order HVAC, solar, car, battery,
+thermostat. Each emission travels out along the circuit in **both** directions
+and stops at the next device, where it is absorbed: the head halts on arrival
+while the tail keeps closing, so a pulse grows out of the sender and shrinks
+into the receiver.
 
 Device positions were measured against the circuit rather than estimated —
 every device sits within 3.7px of the path, so pulses genuinely appear to leave
@@ -52,6 +50,10 @@ the device. The legs they travel:
 
 **Pulse speed**, **take turns every**, and **pulse length** set the pacing.
 Reach is not a control — the geometry above decides it.
+
+An earlier ending sent evenly spaced pulses around the whole circuit instead of
+emitting them per device. It is no longer in the panel but survives as
+`?source=loop`, which also re-enables the `pulses` and `cycles` parameters.
 
 Solar's forward leg crosses the point where the circuit path opens. SVG dashes
 do not wrap across that seam, so a pulse spanning it is drawn as two dashes

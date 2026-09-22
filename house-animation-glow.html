@@ -104,24 +104,13 @@
     </fieldset>
 
     <fieldset><legend>Energy flow</legend>
-      <div class="row"><label>Pulses come from</label>
-        <div class="seg">
-          <button data-src="devices" id="b_devices">Devices</button>
-          <button data-src="loop" id="b_loop">Loop</button>
-        </div></div>
       <div class="hint" id="srcHint"></div>
-      <div class="dev-only">
-        <div class="row"><label for="c_pulseSpeed">Pulse speed</label>
-          <input type="range" id="c_pulseSpeed" min="40" max="900" step="10"><output id="o_pulseSpeed"></output></div>
-        <div class="row"><label for="c_emitEvery">Take turns every</label>
-          <input type="range" id="c_emitEvery" min="0.1" max="2" step="0.05"><output id="o_emitEvery"></output></div>
-      </div>
-      <div class="row loop-only"><label for="c_pulses">Pulses</label>
-        <input type="range" id="c_pulses" min="1" max="8" step="1"><output id="o_pulses"></output></div>
+      <div class="row"><label for="c_pulseSpeed">Pulse speed</label>
+        <input type="range" id="c_pulseSpeed" min="40" max="900" step="10"><output id="o_pulseSpeed"></output></div>
+      <div class="row"><label for="c_emitEvery">Take turns every</label>
+        <input type="range" id="c_emitEvery" min="0.1" max="2" step="0.05"><output id="o_emitEvery"></output></div>
       <div class="row"><label for="c_pulseLen">Pulse length</label>
         <input type="range" id="c_pulseLen" min="20" max="400" step="10"><output id="o_pulseLen"></output></div>
-      <div class="row loop-only"><label for="c_cycles">Flow speed</label>
-        <input type="range" id="c_cycles" min="1" max="10" step="1"><output id="o_cycles"></output></div>
 
     </fieldset>
 
@@ -439,27 +428,19 @@ if(UI){
   };
   addEventListener("resize",fit); fit();
 
-  const KEYS=["lineW","glowStroke","pulses","pulseLen","cycles","pulseSpeed","emitEvery","lineDim"];
+  const KEYS=["lineW","glowStroke","pulseLen","pulseSpeed","emitEvery","lineDim"];
   const REPOOL=new Set(["pulseSpeed","emitEvery","pulseLen"]);
   const FMT={ lineW:v=>v+"px", glowStroke:v=>v+"px",
-              pulses:v=>Math.round(v), pulseLen:v=>Math.round(v)+"px",
-              cycles:v=>Math.round(v)+"x", lineDim:v=>Math.round(v*100)+"%",
+              pulseLen:v=>Math.round(v)+"px", lineDim:v=>Math.round(v*100)+"%",
               pulseSpeed:v=>Math.round(v), emitEvery:v=>v.toFixed(2)+"s" };
   let playing=true, flowOnly=false, t0=performance.now(), tNow=0;
 
   function sync(){
     KEYS.forEach(k=>{ $("c_"+k).value=S[k]; $("o_"+k).textContent=FMT[k](+S[k]); });
-    $("b_devices").setAttribute("aria-pressed", S.source==="devices");
-    $("b_loop").setAttribute("aria-pressed", S.source==="loop");
-    const dev = S.source==="devices";
-    for(const el of document.querySelectorAll(".dev-only")) el.style.display = dev?"":"none";
-    for(const el of document.querySelectorAll(".loop-only")) el.style.display = dev?"none":"";
-    $("srcHint").textContent = dev
-      ? "HVAC, solar, car, battery then thermostat take turns emitting a pulse "
-        + "both ways; "
-        + "each one stops at the next device along. A full round takes "
-        + (S.emitEvery * EMIT_ORDER.length).toFixed(1) + "s."
-      : "Evenly spaced pulses circle the loop; speed is whole cycles per window, so it closes seamlessly.";
+    $("srcHint").textContent =
+      "HVAC, solar, car, battery then thermostat take turns emitting a pulse "
+      + "both ways; each one stops at the next device along. A full round takes "
+      + (S.emitEvery * EMIT_ORDER.length).toFixed(1) + "s.";
     $("b_sequence").setAttribute("aria-pressed", S.mode==="sequence");
     $("b_present").setAttribute("aria-pressed", S.mode==="present");
   }
@@ -468,8 +449,6 @@ if(UI){
     if(REPOOL.has(k)) buildPool();
     applyStyle(); draw();
   }));
-  ["devices","loop"].forEach(v=>$("b_"+v).addEventListener("click",()=>{
-    S.source=v; buildPool(); applyStyle(); sync(); draw(); }));
   ["sequence","present"].forEach(m=>$("b_"+m).addEventListener("click",()=>{
     S.mode=m; t0=performance.now(); tNow=0; sync(); draw(); }));
   $("b_play").addEventListener("click",()=>{
@@ -509,7 +488,7 @@ if(UI){
       + 'locally. Everything above is live.</div>';
   }
   function query(){
-    return KEYS.map(k=>k+"="+((k==="pulses"||k==="cycles")?Math.round(S[k]):S[k])).join("&")
+    return KEYS.map(k=>k+"="+S[k]).join("&")
       + "&colour=" + S.colour + "&mode=" + S.mode
       + "&source=" + S.source + "&showLine=" + (S.showLine?1:0);
   }
