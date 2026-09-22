@@ -28,6 +28,7 @@
   input[type=text], select { background:#1d1d21; color:var(--ink); border:1px solid var(--line);
     border-radius:6px; padding:5px 7px; font:12px inherit; width:100%; box-sizing:border-box; }
   .seg { display:flex; gap:6px; }
+  .seglabel { font-size:12px; margin:7px 0 6px; }
   .seg button { flex:1; background:#1d1d21; color:var(--ink); border:1px solid var(--line);
                 border-radius:6px; padding:5px 0; font:12px inherit; cursor:pointer; }
   .seg button[aria-pressed=true] { background:#2a3a63; border-color:#3C77FF; }
@@ -97,29 +98,31 @@
         <input type="range" id="c_lineW" min="1" max="12" step="0.5"><output id="o_lineW"></output></div>
       <div class="row"><label for="c_glowStroke">Glow weight</label>
         <input type="range" id="c_glowStroke" min="0" max="24" step="0.5"><output id="o_glowStroke"></output></div>
-      <div class="hint">Line weight also sets the width of each pulse's bright
-        core, so a pulse always reads as riding the line.</div>
       <div class="row"><label for="c_lineDim">Circuit opacity after pulses start</label>
         <input type="range" id="c_lineDim" min="0" max="1" step="0.05"><output id="o_lineDim"></output></div>
     </fieldset>
 
     <fieldset><legend>Energy flow</legend>
       <div class="hint" id="srcHint"></div>
+      <div class="hint">Pulse width is the halo; the bright core inside it follows
+        line weight, so a pulse always reads as riding the circuit.</div>
       <div class="row"><label for="c_pulseSpeed">Pulse speed</label>
         <input type="range" id="c_pulseSpeed" min="40" max="900" step="10"><output id="o_pulseSpeed"></output></div>
       <div class="row"><label for="c_emitEvery">Take turns every</label>
         <input type="range" id="c_emitEvery" min="0.1" max="2" step="0.05"><output id="o_emitEvery"></output></div>
       <div class="row"><label for="c_pulseLen">Pulse length</label>
         <input type="range" id="c_pulseLen" min="20" max="400" step="10"><output id="o_pulseLen"></output></div>
+      <div class="row"><label for="c_flowW">Pulse width</label>
+        <input type="range" id="c_flowW" min="1" max="24" step="0.5"><output id="o_flowW"></output></div>
 
     </fieldset>
 
     <fieldset><legend>Scene</legend>
-      <div class="row"><label>Devices</label>
-        <div class="seg">
-          <button data-mode="sequence" id="b_sequence">One by one</button>
-          <button data-mode="present" id="b_present">All present</button>
-        </div></div>
+      <div class="seglabel">Devices</div>
+      <div class="seg">
+        <button data-mode="sequence" id="b_sequence">One by one</button>
+        <button data-mode="present" id="b_present">All present</button>
+      </div>
     </fieldset>
 
     <fieldset><legend>Preview</legend>
@@ -428,9 +431,9 @@ if(UI){
   };
   addEventListener("resize",fit); fit();
 
-  const KEYS=["lineW","glowStroke","pulseLen","pulseSpeed","emitEvery","lineDim"];
+  const KEYS=["lineW","glowStroke","pulseLen","flowW","pulseSpeed","emitEvery","lineDim"];
   const REPOOL=new Set(["pulseSpeed","emitEvery","pulseLen"]);
-  const FMT={ lineW:v=>v+"px", glowStroke:v=>v+"px",
+  const FMT={ lineW:v=>v+"px", glowStroke:v=>v+"px", flowW:v=>v+"px",
               pulseLen:v=>Math.round(v)+"px", lineDim:v=>Math.round(v*100)+"%",
               pulseSpeed:v=>Math.round(v), emitEvery:v=>v.toFixed(2)+"s" };
   let playing=true, flowOnly=false, t0=performance.now(), tNow=0;

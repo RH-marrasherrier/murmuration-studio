@@ -23,8 +23,9 @@ Requires `python3`, `ffmpeg`, and Google Chrome at the standard macOS path.
 ## Controls
 
 **Line weight** and **glow weight** — the width of the circuit's bright core
-and of the halo behind it. Line weight also sets the width of each pulse's
-core, so a pulse always reads as riding the line rather than sitting beside it.
+and of the halo behind it. **Pulse width** is the halo around a travelling
+pulse; the bright core inside it follows line weight, so a pulse always reads
+as riding the circuit rather than sitting beside it.
 
 **Circuit opacity after pulses start** — the line draws itself in at full
 strength, then settles to this level once the pulses begin, so the pulses read
