@@ -33,7 +33,7 @@ def set_job(jid, **kw):
         JOBS.setdefault(jid, {}).update(kw)
 
 
-def run_export(jid, query, fps, dur, fmt, name, source):
+def run_export(jid, query, fps, dur, fmt, name, source, bg):
     """Render one or both formats, sharing a single frame capture."""
     frames = tempfile.mkdtemp(prefix="murm-frames-")
     try:
@@ -44,7 +44,7 @@ def run_export(jid, query, fps, dur, fmt, name, source):
 
         env = dict(os.environ,
                    W="995", H="1066", SCALE="1",
-                   FPS=str(fps), DUR=str(dur), BG="#060606",
+                   FPS=str(fps), DUR=str(dur), BG=bg,
                    FRAMES_DIR=frames,
                    URLEXTRA="&ui=0&" + query.lstrip("&?"))
 
@@ -83,7 +83,7 @@ def run_export(jid, query, fps, dur, fmt, name, source):
 
         # drop a sidecar so a rendered file always has its settings on record
         with open(os.path.join(ROOT, f"{name}.params.json"), "w") as f:
-            json.dump({"query": query, "fps": fps, "dur": dur,
+            json.dump({"query": query, "fps": fps, "dur": dur, "bg": bg,
                        "rendered": time.strftime("%Y-%m-%d %H:%M:%S")}, f, indent=2)
         set_job(jid, state="done", message="saved", outputs=outputs)
     except Exception as exc:                       # noqa: BLE001 - report to the UI
@@ -146,6 +146,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except (TypeError, ValueError):
             return self._json(400, {"error": "bad fps/dur"})
 
+        # "none" renders transparent; anything else must be a plain hex colour
+        bg = str(req.get("bg", "#060606")).strip().lower()
+        if bg != "none" and not re.fullmatch(r"#[0-9a-f]{6}", bg):
+            return self._json(400, {"error": f"bad background {bg!r}"})
+
         jid = uuid.uuid4().hex[:10]
         set_job(jid, state="queued", message="queued", frame=0, total=1, outputs=[])
         # only the animations in this directory may be rendered
@@ -153,7 +158,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if source != "house-animation-glow.html":
             return self._json(400, {"error": "unknown source"})
         threading.Thread(target=run_export,
-                         args=(jid, req.get("query", ""), fps, dur, fmt, name, source),
+                         args=(jid, req.get("query", ""), fps, dur, fmt, name,
+                               source, bg),
                          daemon=True).start()
         return self._json(200, {"job": jid})
 

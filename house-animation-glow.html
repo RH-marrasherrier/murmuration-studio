@@ -8,6 +8,7 @@
   html, body { margin:0; padding:0; background:#060606; }
   #stage { width:995px; height:1066px; position:relative; overflow:hidden; }
   #stage img { position:absolute; display:block; }
+  #stage img.house { filter:url(#houseTint); }
   #svg { position:absolute; inset:0; display:block; pointer-events:none; }
 
   body.ui { background:#0b0b0d; font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
@@ -25,6 +26,7 @@
   .row label { flex:1; font-size:12px; }
   .row output { width:52px; text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); font-size:11.5px; }
   input[type=range] { width:300px; accent-color:#3C77FF; }
+  input[aria-invalid=true] { border-color:#c4564b; }
   input[type=text], select { background:#1d1d21; color:var(--ink); border:1px solid var(--line);
     border-radius:6px; padding:5px 7px; font:12px inherit; width:100%; box-sizing:border-box; }
   .seg { display:flex; gap:6px; }
@@ -46,20 +48,32 @@
 <div id="wrap">
   <div id="scaler">
     <div id="stage">
-      <img id="x_base"   src="assets/house-anim/layers/x_base.png">
-      <img id="x_lawn"   src="assets/house-anim/layers/x_lawn.png">
-      <img id="x_floor1" src="assets/house-anim/layers/x_floor1.png">
-      <img id="h_floor2" src="assets/house-anim/layers/h_floor2.png">
-      <img id="x_floor2" src="assets/house-anim/layers/x_floor2.png">
-      <img id="h_roof1"  src="assets/house-anim/layers/h_roof1.png">
-      <img id="x_roof1"  src="assets/house-anim/layers/x_roof1.png">
-      <img id="h_roof2"  src="assets/house-anim/layers/h_roof2.png">
-      <img id="x_roof2"  src="assets/house-anim/layers/x_roof2.png">
+      <img class="house" id="x_base"   src="assets/house-anim/layers/x_base.png">
+      <img class="house" id="x_lawn"   src="assets/house-anim/layers/x_lawn.png">
+      <img class="house" id="x_floor1" src="assets/house-anim/layers/x_floor1.png">
+      <img class="house" id="h_floor2" src="assets/house-anim/layers/h_floor2.png">
+      <img class="house" id="x_floor2" src="assets/house-anim/layers/x_floor2.png">
+      <img class="house" id="h_roof1"  src="assets/house-anim/layers/h_roof1.png">
+      <img class="house" id="x_roof1"  src="assets/house-anim/layers/x_roof1.png">
+      <img class="house" id="h_roof2"  src="assets/house-anim/layers/h_roof2.png">
+      <img class="house" id="x_roof2"  src="assets/house-anim/layers/x_roof2.png">
 
       <!-- circuit sits BELOW the devices so they occlude it -->
       <svg id="svg" width="995" height="1066" viewBox="0 0 995 1066"
            aria-label="An isometric house opens up, devices arrive, then a glowing circuit wraps around it">
         <defs>
+          <!-- The house layers are pure greyscale: 0 is a shape's own fill,
+               and the strokes run up to ~224. This ramps each channel so the
+               fill lands on the background colour and the strokes stay white,
+               which lets the fills keep acting as opaque occluders. A blend
+               mode cannot do that — lower layers would show through. -->
+          <filter id="houseTint" color-interpolation-filters="sRGB">
+            <feComponentTransfer>
+              <feFuncR id="tintR" type="linear" slope="1" intercept="0"/>
+              <feFuncG id="tintG" type="linear" slope="1" intercept="0"/>
+              <feFuncB id="tintB" type="linear" slope="1" intercept="0"/>
+            </feComponentTransfer>
+          </filter>
           <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur id="glowBlur" stdDeviation="7.55"/>
           </filter>
@@ -94,15 +108,23 @@
     <div class="sub">Changes apply live. Export renders at full quality.</div>
 
     <fieldset><legend>Circuit line</legend>
+      <div class="row"><label for="c_arch">Arch height</label>
+        <input type="range" id="c_arch" min="0" max="0.9" step="0.02"><output id="o_arch"></output></div>
+      <div class="row"><label for="c_dashLen">Dash length</label>
+        <input type="range" id="c_dashLen" min="0.5" max="60" step="0.5"><output id="o_dashLen"></output></div>
+      <div class="row"><label for="c_dotGap">Dash gap</label>
+        <input type="range" id="c_dotGap" min="1" max="40" step="0.5"><output id="o_dotGap"></output></div>
       <div class="row"><label for="c_lineW">Line weight</label>
         <input type="range" id="c_lineW" min="1" max="12" step="0.5"><output id="o_lineW"></output></div>
-      <div class="row"><label for="c_glowStroke">Glow weight</label>
-        <input type="range" id="c_glowStroke" min="0" max="24" step="0.5"><output id="o_glowStroke"></output></div>
-      <div class="row"><label for="c_lineDim">Circuit opacity after pulses start</label>
-        <input type="range" id="c_lineDim" min="0" max="1" step="0.05"><output id="o_lineDim"></output></div>
     </fieldset>
 
     <fieldset><legend>Energy flow</legend>
+      <div class="seglabel">Energy</div>
+      <div class="seg">
+        <button data-en="pulses" id="b_en_pulses">Pulses</button>
+        <button data-en="flow" id="b_en_flow">Flow</button>
+        <button data-en="off" id="b_en_off">Off</button>
+      </div>
       <div class="hint" id="srcHint"></div>
       <div class="hint">Pulse width is the halo; the bright core inside it follows
         line weight, so a pulse always reads as riding the circuit.</div>
@@ -118,6 +140,10 @@
     </fieldset>
 
     <fieldset><legend>Scene</legend>
+      <div class="row"><label for="e_bg">Background</label>
+        <input type="text" id="e_bg" spellcheck="false" style="flex:1"></div>
+      <div class="hint">Any hex, with or without the #. Type <code>none</code>
+        for a transparent render.</div>
       <div class="seglabel">Devices</div>
       <div class="seg">
         <button data-mode="sequence" id="b_sequence">One by one</button>
@@ -156,14 +182,19 @@
 
 <script>
 const D = {
-  lineW: 5, colour: "powder", glowW: 8.5, glowStroke: 6,
-  pulses: 3, pulseLen: 120, cycles: 3, flowW: 8,
+  lineW: 1, colour: "powder", glowW: 8.5, glowStroke: 0.5,
+  pulses: 3, pulseLen: 60, cycles: 3, flowW: 4,
   houseFade: 0.60, mode: "sequence",
   lineDim: 0.4,        // the drawn circuit settles to this once pulses start
+  layout: "ring",      // "ring" | "spokes" arches, or "wires" for the old circuit
+  arch: 0.42,          // control-point lift, as a fraction of the chord
+  dashLen: 12,         // px of drawn dash along an arch
+  dotGap: 8,           // px of gap between dashes
   source: "devices",   // "loop" = pulses circling; "devices" = emitted by each device
   showLine: 1,         // 0 hides the circuit, leaving only the pulses
-  emitEvery: 0.45,     // seconds between successive emissions (one device each)
-  pulseSpeed: 300      // px/sec outward
+  energy: "pulses",    // "pulses" | "flow" (the dots march) | "off"
+  emitEvery: 0.50,     // seconds between successive emissions (one device each)
+  pulseSpeed: 230      // px/sec outward
 };
 const q = new URLSearchParams(location.search);
 const num = k => q.has(k) ? parseFloat(q.get(k)) : D[k];
@@ -184,6 +215,9 @@ const S = {
   cycles:num("cycles"), flowW:num("flowW"), houseFade:num("houseFade"),
   mode:(q.get("mode")||D.mode), lineDim:num("lineDim"),
   source:(q.get("source")||D.source), showLine:num("showLine"),
+  layout:(q.get("layout")||D.layout), arch:num("arch"),
+  dashLen:num("dashLen"), dotGap:num("dotGap"),
+  energy:(q.get("energy")||D.energy),
   emitEvery:num("emitEvery"), pulseSpeed:num("pulseSpeed")
 };
 
@@ -192,6 +226,18 @@ const S = {
 /* Devices emit in turn, one per interval, in this order. */
 const EMIT_ORDER = ["ac", "solar", "car", "battery", "thermostat"];
 const DEV_ARC = {"solar": 0.97272, "battery": 0.78377, "car": 0.61433, "ac": 0.37621, "thermostat": 0.23069};
+
+/* Device centres, from each layer's aligned position plus half its size. */
+const DEV_PT = { solar:[389,460], battery:[252,601], car:[464,720],
+                 ac:[764,644], thermostat:[718,532] };
+
+/* Ring follows the same neighbour order the wires did, so the relay carries
+   over unchanged. Spokes make solar the single source. */
+const LEGS = {
+  ring:   [["thermostat","ac"],["ac","car"],["car","battery"],
+           ["battery","solar"],["solar","thermostat"]],
+  spokes: [["solar","thermostat"],["solar","ac"],["solar","car"],["solar","battery"]]
+};
 
 const $ = id => document.getElementById(id);
 const easeOut   = x => 1 - Math.pow(1 - x, 3);
@@ -256,6 +302,69 @@ function setSpan(el, tail, head){
   }
 }
 
+/* An arch is a quadratic Bezier lifted above the chord. The base line is
+   dotted, and a dot pattern already occupies stroke-dasharray — so the reveal
+   cannot also use dashes. Instead the curve itself is subdivided with de
+   Casteljau, which is exact for a quadratic, and grown from 0 to 1. */
+function archPts(a, b){
+  const p = DEV_PT[a], q = DEV_PT[b];
+  const len = Math.hypot(q[0]-p[0], q[1]-p[1]);
+  return [p, [(p[0]+q[0])/2, (p[1]+q[1])/2 - S.arch*len], q];
+}
+function archD(a, b, t){
+  const [P0,P1,P2] = archPts(a, b);
+  if (t >= 1) return `M${P0[0]} ${P0[1]} Q${P1[0]} ${P1[1]} ${P2[0]} ${P2[1]}`;
+  const L = (u,v,k) => [u[0]+(v[0]-u[0])*k, u[1]+(v[1]-u[1])*k];
+  const A = L(P0,P1,t), B = L(P1,P2,t), E = L(A,B,t);
+  return `M${P0[0]} ${P0[1]} Q${A[0]} ${A[1]} ${E[0]} ${E[1]}`;
+}
+
+/* One base path per leg (dotted), one halo behind it, and a hidden full-length
+   twin the pulses measure against. */
+const legG = document.createElementNS("http://www.w3.org/2000/svg","g");
+legG.setAttribute("id","legG");
+$("circuitG").appendChild(legG);
+let LEG = [];
+function buildLegs(){
+  const defs = LEGS[S.layout] || LEGS.ring;
+  while (LEG.length < defs.length) {
+    const mk = () => {
+      const e = document.createElementNS("http://www.w3.org/2000/svg","path");
+      e.setAttribute("fill","none");
+      e.setAttribute("stroke-linecap","round");
+      return e;
+    };
+    const halo = mk(), core = mk(), full = mk();
+    halo.setAttribute("filter","url(#glow)");
+    full.setAttribute("stroke","none");
+    legG.appendChild(halo); legG.appendChild(core); legG.appendChild(full);
+    LEG.push({halo, core, full});
+  }
+  LEG.forEach((l,i) => {
+    const def = defs[i];
+    l.def = def;
+    if (!def) { l.halo.setAttribute("d",""); l.core.setAttribute("d",""); l.len = 0; return; }
+    const d = archD(def[0], def[1], 1);
+    l.full.setAttribute("d", d);
+    l.len = l.full.getTotalLength();
+  });
+  LEG.length = Math.min(LEG.length, Math.max(LEG.length, defs.length));
+  return defs.length;
+}
+function legCount(){ return (LEGS[S.layout] || LEGS.ring).length; }
+
+/* Every leg a device touches, with the far end it pushes energy toward. */
+function legsFrom(name){
+  const out = [];
+  LEG.forEach((l,i) => {
+    if (!l.def) return;
+    if (l.def[0] === name) out.push({leg:i, flip:false});
+    else if (l.def[1] === name) out.push({leg:i, flip:true});
+  });
+  return out;
+}
+const MAX_FANOUT = 4;   // solar in spokes mode
+
 /* Device pulses get their own <path> pool: each pulse needs its own opacity
    (it fades with distance travelled), so they cannot share one dash pattern. */
 const pulseG = document.createElementNS("http://www.w3.org/2000/svg","g");
@@ -267,7 +376,7 @@ function liveEmissions(){
   return Math.max(1, Math.min(20, Math.ceil(life / Math.max(0.05, S.emitEvery)) + 1));
 }
 function buildPool(){
-  const need = 2 * liveEmissions();
+  const need = MAX_FANOUT * liveEmissions();
   while (POOL.length < need) {
     const g = document.createElementNS("http://www.w3.org/2000/svg","g");
     const halo = document.createElementNS("http://www.w3.org/2000/svg","path");
@@ -283,7 +392,50 @@ function buildPool(){
   }
   for (let i = need; i < POOL.length; i++) POOL[i].g.setAttribute("opacity", 0);
 }
+buildLegs();
 buildPool();
+
+function drawLegPulses(T){
+  const fs = flowStartT();
+  const tf = T - fs;
+  if (tf < 0) { for (const p of POOL) p.g.setAttribute("opacity", 0); return; }
+  const col = COLS[S.colour] || COLS.powder;
+  const len = S.pulseLen;
+  const longest = Math.max(...LEG.filter(l=>l.def).map(l=>l.len), 1);
+  const kMax = Math.floor(tf / S.emitEvery);
+  const kMin = Math.max(0, Math.ceil((tf - (longest + len) / S.pulseSpeed) / S.emitEvery));
+  let n = 0;
+  for (let k = kMin; k <= kMax; k++) {
+    const name = EMIT_ORDER[k % EMIT_ORDER.length];
+    const u = (tf - k * S.emitEvery) * S.pulseSpeed;
+    if (u < 0) continue;
+    for (const {leg, flip} of legsFrom(name)) {
+      const L = LEG[leg];
+      // head stops at the far device, tail keeps closing: the pulse grows out
+      // of the sender and is absorbed by the receiver
+      const head = Math.min(u, L.len);
+      const tail = Math.min(Math.max(u - len, 0), L.len);
+      const slot = POOL[n++];
+      if (!slot) continue;
+      if (head - tail <= 0.5) { slot.g.setAttribute("opacity", 0); continue; }
+      // dashoffset runs from the path's own start, so mirror when the sender
+      // is the far endpoint
+      const a = flip ? L.len - head : tail;
+      const run = head - tail;
+      slot.g.setAttribute("opacity", 1);
+      slot.core.setAttribute("stroke", "#EAF1FF");
+      slot.core.setAttribute("stroke-width", S.lineW);
+      slot.halo.setAttribute("stroke", col);
+      slot.halo.setAttribute("stroke-width", S.flowW);
+      for (const el of [slot.core, slot.halo]) {
+        el.setAttribute("d", L.full.getAttribute("d"));
+        el.setAttribute("stroke-dasharray", run + " " + (L.len + run));
+        el.setAttribute("stroke-dashoffset", -a);
+      }
+    }
+  }
+  for (; n < POOL.length; n++) POOL[n].g.setAttribute("opacity", 0);
+}
 
 function drawDevicePulses(T){
   const fs = flowStartT();
@@ -372,9 +524,37 @@ function render(t){
   // Once the pulses take over, the line drops back to a base level so it reads
   // as the conduit rather than the event.
   const fsDim=flowStartT();
-  const dim=1-(1-S.lineDim)*easeInOut(seg(T,fsDim,fsDim+0.7));
+  const dim=S.energy==="pulses" ? 1-(1-S.lineDim)*easeInOut(seg(T,fsDim,fsDim+0.7)) : 1;
   const cp=easeInOut(seg(T,W6[0],W6[1]));
+  const arches = S.layout !== "wires";
+  circuit.setAttribute("display", arches ? "none" : "inline");
+  circuitGlow.setAttribute("display", arches ? "none" : "inline");
+  legG.setAttribute("display", arches ? "inline" : "none");
   if(cp<=0){ $("circuitG").style.opacity=0; }
+  else if(arches){
+    $("circuitG").style.opacity=dim;
+    const dotLen = Math.max(0.01, S.dashLen);
+    const dots = dotLen + " " + S.dotGap;
+    // A dash pattern repeats every dotLen+gap, so stepping the offset by that
+    // period is what makes the dots travel rather than shimmer in place.
+    const period = dotLen + S.dotGap;
+    const travelled = S.energy==="flow"
+      ? Math.max(0, T - flowStartT()) * S.pulseSpeed : 0;
+    const dotOff = -(travelled % period);
+    for(const l of LEG){
+      if(!l.def){ l.core.setAttribute("d",""); l.halo.setAttribute("d",""); continue; }
+      const d = archD(l.def[0], l.def[1], cp);
+      for(const [el,w] of [[l.core,S.lineW],[l.halo,S.glowStroke]]){
+        el.setAttribute("d", d);
+        el.setAttribute("stroke-width", w);
+        el.setAttribute("stroke-dasharray", dots);
+        el.setAttribute("stroke-dashoffset", dotOff);
+        el.setAttribute("opacity", (S.showLine && w>0) ? 1 : 0);
+      }
+      l.core.setAttribute("stroke", COLS[S.colour] || COLS.powder);
+      l.halo.setAttribute("stroke", "#749EFF");
+    }
+  }
   else {
     $("circuitG").style.opacity=dim;
     const s0=S.circuitStartFrac*CLEN;
@@ -389,10 +569,16 @@ function render(t){
 
   // ---- once closed, energy keeps travelling. Evenly spaced pulses stepped by
   // exactly one period per cycle, whole cycles per window, so no loop seam.
+  if(S.energy!=="pulses"){
+    $("flowG").setAttribute("opacity",0);
+    pulseG.setAttribute("opacity",0);
+    for(const pl of POOL) pl.g.setAttribute("opacity",0);
+    return;
+  }
   if(S.source==="devices"){
     $("flowG").setAttribute("opacity",0);
     pulseG.setAttribute("opacity",1);
-    drawDevicePulses(T);
+    if(S.layout==="wires") drawDevicePulses(T); else drawLegPulses(T);
     return;
   }
   pulseG.setAttribute("opacity",0);
@@ -415,8 +601,40 @@ function render(t){
 }
 
 const SEG=[parseFloat(q.get("from")??0), parseFloat(q.get("to")??S.total)];
-const bg=q.get("bg")??S.bg;
-$("stage").style.background = bg==="none" ? "transparent" : bg;
+/* Accepts #rgb, #rrggbb, either with or without the leading #, plus the
+   literal "none" that the render pipeline uses for a transparent export.
+   Returns null for anything else so a half-typed value is simply ignored. */
+function normBg(v){
+  const t=String(v).trim().toLowerCase();
+  if(t==="none") return "none";
+  const m=/^#?([0-9a-f]{3}|[0-9a-f]{6})$/.exec(t);
+  if(!m) return null;
+  const h=m[1];
+  return "#" + (h.length===3 ? h.split("").map(c=>c+c).join("") : h);
+}
+/* Ramp each channel from the background colour (the fills, value 0) to a
+   stroke colour (value 1). The stroke end has to flip on a light background:
+   ramping to white there would give slope 0 and the whole house would
+   disappear into the backdrop.
+   A transparent render still needs a colour in the fills, so "none" keeps the
+   design's dark rather than punching holes through the house. */
+function tintHouse(v){
+  const c = v==="none" ? "#060606" : v;
+  const ch = i => parseInt(c.slice(1+i*2, 3+i*2), 16) / 255;
+  const lum = 0.2126*ch(0) + 0.7152*ch(1) + 0.0722*ch(2);
+  const stroke = lum > 0.5 ? 0.024 : 1;      // 0.024 is #060606
+  ["R","G","B"].forEach((name,i)=>{
+    const f = $("tint"+name);
+    f.setAttribute("intercept", ch(i));
+    f.setAttribute("slope", stroke - ch(i));
+  });
+}
+function paintBg(v){
+  S.bg = v;
+  $("stage").style.background = v==="none" ? "transparent" : v;
+  tintHouse(v);
+}
+paintBg(normBg(q.get("bg") ?? S.bg) || S.bg);
 const at=t=>render((SEG[0]+t*(SEG[1]-SEG[0]))/S.total);
 
 const UI = !q.has("t") && q.get("ui")!=="0";
@@ -431,26 +649,39 @@ if(UI){
   };
   addEventListener("resize",fit); fit();
 
-  const KEYS=["lineW","glowStroke","pulseLen","flowW","pulseSpeed","emitEvery","lineDim"];
+  const KEYS=["arch","dashLen","dotGap","lineW","pulseLen","flowW","pulseSpeed","emitEvery"];
   const REPOOL=new Set(["pulseSpeed","emitEvery","pulseLen"]);
-  const FMT={ lineW:v=>v+"px", glowStroke:v=>v+"px", flowW:v=>v+"px",
-              pulseLen:v=>Math.round(v)+"px", lineDim:v=>Math.round(v*100)+"%",
+  const REGEOM=new Set(["arch"]);
+  const FMT={ arch:v=>Math.round(v*100)+"%",
+              dashLen:v=>v+"px", dotGap:v=>v+"px", lineW:v=>v+"px",
+              flowW:v=>v+"px", pulseLen:v=>Math.round(v)+"px",
               pulseSpeed:v=>Math.round(v), emitEvery:v=>v.toFixed(2)+"s" };
   let playing=true, flowOnly=false, t0=performance.now(), tNow=0;
 
   function sync(){
     KEYS.forEach(k=>{ $("c_"+k).value=S[k]; $("o_"+k).textContent=FMT[k](+S[k]); });
+    for(const m of ["pulses","flow","off"])
+      $("b_en_"+m).setAttribute("aria-pressed", S.energy===m);
     $("srcHint").textContent =
-      "HVAC, solar, car, battery then thermostat take turns emitting a pulse "
-      + "both ways; each one stops at the next device along. A full round takes "
-      + (S.emitEvery * EMIT_ORDER.length).toFixed(1) + "s.";
+      S.energy==="pulses"
+        ? "HVAC, solar, car, battery then thermostat take turns emitting a pulse "
+          + "both ways; each one stops at the next device along. A full round takes "
+          + (S.emitEvery * EMIT_ORDER.length).toFixed(1) + "s."
+      : S.energy==="flow"
+        ? "The dashes themselves travel, at pulse speed, so the line reads as "
+          + "moving along the "
+          + (S.layout==="spokes" ? "spokes, outward from solar" : "ring, in one direction")
+          + ". The circuit keeps full opacity so the dashes stay legible. "
+          + flowAlias()
+        : "Off: the arches draw in and stay put, at full opacity.";
     $("b_sequence").setAttribute("aria-pressed", S.mode==="sequence");
     $("b_present").setAttribute("aria-pressed", S.mode==="present");
   }
   KEYS.forEach(k=>$("c_"+k).addEventListener("input",e=>{
     S[k]=parseFloat(e.target.value); $("o_"+k).textContent=FMT[k](+S[k]);
+    if(REGEOM.has(k)) buildLegs();
     if(REPOOL.has(k)) buildPool();
-    applyStyle(); draw();
+    applyStyle(); sync(); draw();   // sync keeps the flow-aliasing hint current
   }));
   ["sequence","present"].forEach(m=>$("b_"+m).addEventListener("click",()=>{
     S.mode=m; t0=performance.now(); tNow=0; sync(); draw(); }));
@@ -466,7 +697,16 @@ if(UI){
   $("c_scrub").addEventListener("input",e=>{
     playing=false; $("b_play").textContent="Play"; tNow=parseFloat(e.target.value); draw();
   });
-  $("e_fps").addEventListener("input",e=>$("o_fps").textContent=e.target.value);
+  ["pulses","flow","off"].forEach(m=>$("b_en_"+m).addEventListener("click",()=>{
+    S.energy=m; applyStyle(); sync(); draw(); }));
+  $("e_bg").value = S.bg;
+  $("e_bg").addEventListener("input",e=>{
+    const v=normBg(e.target.value);
+    e.target.setAttribute("aria-invalid", v?"false":"true");
+    if(v) paintBg(v);
+  });
+  $("e_bg").addEventListener("blur",e=>{ e.target.value=S.bg; e.target.setAttribute("aria-invalid","false"); });
+  $("e_fps").addEventListener("input",e=>{ $("o_fps").textContent=e.target.value; sync(); });
   $("e_dur").addEventListener("input",e=>$("o_dur").textContent=e.target.value+"s");
 
   const fStart=()=> Math.max(0,(drawWindow()[0]-0.3))/S.total;
@@ -490,10 +730,28 @@ if(UI){
       + 'headless Chrome and ffmpeg, so it only works when the studio is run '
       + 'locally. Everything above is live.</div>';
   }
+  /* A dash pattern that advances more than half its period between frames
+     aliases: the dots appear to drift backwards. Report the real numbers for
+     the frame rate currently set for export. */
+  function flowAlias(){
+    const fps = Math.max(1, +$("e_fps").value || 25);
+    const period = Math.max(0.01, S.dashLen) + S.dotGap;
+    const step = S.pulseSpeed / fps;
+    const safe = Math.floor(period/2 * fps);
+    return step > period/2
+      ? "At " + Math.round(S.pulseSpeed) + "px/s and " + fps + "fps the dashes jump "
+        + step.toFixed(1) + "px a frame against a " + period.toFixed(1)
+        + "px repeat, so they will read as drifting BACKWARDS. Keep speed at or under "
+        + safe + ", or lengthen the dash or gap."
+      : "At " + fps + "fps that is " + step.toFixed(1) + "px a frame against a "
+        + period.toFixed(1) + "px repeat, so it flows forward cleanly.";
+  }
+
   function query(){
     return KEYS.map(k=>k+"="+S[k]).join("&")
       + "&colour=" + S.colour + "&mode=" + S.mode
-      + "&source=" + S.source + "&showLine=" + (S.showLine?1:0);
+      + "&source=" + S.source + "&showLine=" + (S.showLine?1:0)
+      + "&layout=" + S.layout + "&energy=" + S.energy;
   }
   if(LOCAL) $("b_export").addEventListener("click", async ()=>{
     const btn=$("b_export"); btn.disabled=true;
@@ -502,7 +760,7 @@ if(UI){
     try{
       const r=await fetch("/export",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ query:query(), name:$("e_name").value,
-          source:"house-animation-glow.html",
+          source:"house-animation-glow.html", bg:S.bg,
           format:$("e_format").value, fps:+$("e_fps").value, dur:+$("e_dur").value })});
       const {job,error}=await r.json();
       if(error) throw new Error(error);

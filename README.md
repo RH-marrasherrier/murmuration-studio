@@ -1,8 +1,8 @@
 # Glow studio
 
 A local tuning studio for the Renew Home house-build animation — an isometric
-home that opens up, gains devices, then has energy travel around a circuit as
-pulses, each device emitting in turn.
+home that opens up, gains devices, then has energy travel between them along
+dashed arches.
 
 Sliders change the animation live in the browser; the export button runs the
 real render pipeline at full quality with whatever is on screen.
@@ -22,43 +22,63 @@ Requires `python3`, `ffmpeg`, and Google Chrome at the standard macOS path.
 
 ## Controls
 
-**Line weight** and **glow weight** — the width of the circuit's bright core
-and of the halo behind it. **Pulse width** is the halo around a travelling
-pulse; the bright core inside it follows line weight, so a pulse always reads
-as riding the circuit rather than sitting beside it.
+### Circuit line
 
-**Circuit opacity after pulses start** — the line draws itself in at full
-strength, then settles to this level once the pulses begin, so the pulses read
-as the event and the line as the wiring.
+The devices are joined by five arches, in a ring: thermostat, HVAC, car,
+battery, solar, back to the thermostat. Each arch is a quadratic Bezier lifted
+above the straight line between two device centres, and **arch height** is that
+lift as a share of the chord.
 
-The five devices take turns emitting, in the order HVAC, solar, car, battery,
-thermostat. Each emission travels out along the circuit in **both** directions
-and stops at the next device, where it is absorbed: the head halts on arrival
-while the tail keeps closing, so a pulse grows out of the sender and shrinks
-into the receiver.
+**Dash length** and **dash gap** set the dash pattern, and **line weight** its
+thickness. Line weight also drives the bright core of a travelling pulse, so a
+pulse reads as riding the arch rather than sitting beside it.
 
-Device positions were measured against the circuit rather than estimated —
-every device sits within 3.7px of the path, so pulses genuinely appear to leave
-the device. The legs they travel:
+Device centres were measured from the layer positions rather than estimated.
+The arches and their lengths:
 
-| leg | length | travelled by |
-|---|---|---|
-| thermostat ↔ HVAC | 210px | HVAC, backward |
-| HVAC ↔ car | 343px | HVAC, forward |
-| car ↔ battery | 244px | car, forward |
-| battery ↔ solar | 272px | battery, forward |
-| solar ↔ thermostat | 372px | solar, forward |
+| arch | length |
+|---|---|
+| thermostat → HVAC | 124px |
+| HVAC → car | 341px |
+| car → battery | 265px |
+| battery → solar | 209px |
+| solar → thermostat | 372px |
 
-**Pulse speed**, **take turns every**, and **pulse length** set the pacing.
-Reach is not a control — the geometry above decides it.
+### Energy flow
 
-An earlier ending sent evenly spaced pulses around the whole circuit instead of
-emitting them per device. It is no longer in the panel but survives as
-`?source=loop`, which also re-enables the `pulses` and `cycles` parameters.
+**Pulses** — the five devices take turns emitting, in the order HVAC, solar,
+car, battery, thermostat. Each emission travels out along every arch that
+device touches and stops at the far device, where it is absorbed: the head
+halts on arrival while the tail keeps closing, so a pulse grows out of the
+sender and shrinks into the receiver. **Pulse speed**, **take turns every**,
+**pulse length** and **pulse width** set the pacing and weight.
 
-Solar's forward leg crosses the point where the circuit path opens. SVG dashes
-do not wrap across that seam, so a pulse spanning it is drawn as two dashes
-that together total the right length.
+**Flow** — the dashes themselves travel, so the line reads as moving along the
+ring. Beware of aliasing here: a dash pattern that advances more than half its
+repeat between frames reads as drifting *backwards*. The panel computes this
+live from the dash length, gap, speed and export frame rate, and names the
+maximum safe speed when you cross the line. At the default 12/8 dashes, 25fps
+and 230px/s the pattern moves 9.2px a frame against a 20px repeat, which is
+fine; at 7px dots it measured −2.5px a frame, i.e. backwards.
+
+**Off** — the arches draw in and stay put. Both Flow and Off hold the circuit
+at full opacity, since there are no pulses for it to step back behind.
+
+### Scene
+
+**Background** takes any hex, with or without the `#`, plus `none` for a
+transparent render. The house fills follow it: the layers are pure greyscale, so
+an SVG filter ramps each channel from the background at 0 to the stroke colour
+at 1, which keeps the fills opaque occluders — a blend mode would let lower
+layers show through the roof planes. Above 50% background luminance the stroke
+end flips dark, or the house would dissolve into a light backdrop.
+
+**Devices** arrive one by one, or start all present.
+
+Two retired options survive as URL parameters: `?layout=spokes` swaps the ring
+for four arches radiating out of the solar panels, and `?layout=wires` restores
+the original isometric perimeter circuit. `?source=loop` sends evenly spaced
+pulses around the whole path instead of emitting them per device.
 
 **Export** — name, format (GIF / MP4 / both), frame rate, and playback length.
 Progress is reported frame by frame. Each export also writes a
@@ -85,11 +105,14 @@ The same file serves the live studio and the renderer:
 | `?ui=0` | suppress the panel |
 | `?from=&to=` | render a slice of the timeline |
 | `?bg=%23060606` / `?bg=none` | backdrop, or transparent |
-| `?source=&showLine=&lineDim=…` | every pulse parameter |
+| `?energy=pulses\|flow\|off` | how energy reads |
+| `?layout=ring\|spokes\|wires` | connection geometry |
+| `?arch=&dashLen=&dotGap=&pulseSpeed=…` | every line and pulse parameter |
 
-Parameters not shown in the panel — line colour, glow spread, pulse weight,
-house fade — are baked to their chosen values but still accept a URL override,
-so a render can deviate without the panel growing back.
+Parameters not shown in the panel — line colour, glow spread and weight, the
+post-pulse circuit opacity, house fade — are baked to their chosen values but
+still accept a URL override, so a render can deviate without the panel growing
+back.
 
 `render-gif.sh` walks `?t=` across the timeline with headless Chrome, then
 assembles the frames with ffmpeg. `FRAMES_DIR` caches one capture so the GIF and
@@ -104,9 +127,14 @@ Two rendering details worth preserving:
   distinct colours, so they fit GIF's 256-colour table losslessly and a dither
   pattern only sprays noise over the flat background. Measured: `dither=bayer`
   gave RMSE 3.54 against source, `dither=none` gave 0.08 — and a smaller file.
-- **A pulse crossing the path's seam is drawn as two dashes.** The circuit is
-  an open path and SVG dashes do not wrap across its ends, so a span over that
-  point is written as two dash runs totalling the right length.
+- **The arches grow by subdividing the curve, not by dashes.** The dash pattern
+  already occupies `stroke-dasharray`, so the reveal cannot also use it. Each
+  arch is a quadratic Bezier, which de Casteljau splits exactly, and the drawn
+  curve is regrown each frame from 0 to the reveal fraction.
+- **In `?layout=wires`, a pulse crossing the path's seam is drawn as two
+  dashes.** That circuit is an open path and SVG dashes do not wrap across its
+  ends, so a span over that point is written as two dash runs totalling the
+  right length.
 
 ## Layers
 
