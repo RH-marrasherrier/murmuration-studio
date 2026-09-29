@@ -46,7 +46,7 @@ The arches and their lengths:
 
 ### Energy flow
 
-**Pulses** — the five devices take turns emitting, in the order HVAC, solar,
+Flow is the default. **Pulses** — the five devices take turns emitting, in the order HVAC, solar,
 car, battery, thermostat. Each emission travels out along every arch that
 device touches and stops at the far device, where it is absorbed: the head
 halts on arrival while the tail keeps closing, so a pulse grows out of the
@@ -57,9 +57,9 @@ sender and shrinks into the receiver. **Pulse speed**, **take turns every**,
 ring. Beware of aliasing here: a dash pattern that advances more than half its
 repeat between frames reads as drifting *backwards*. The panel computes this
 live from the dash length, gap, speed and export frame rate, and names the
-maximum safe speed when you cross the line. At the default 12/8 dashes, 25fps
-and 230px/s the pattern moves 9.2px a frame against a 20px repeat, which is
-fine; at 7px dots it measured −2.5px a frame, i.e. backwards.
+maximum safe speed when you cross the line. At the default 7.5/8 dashes, 25fps
+and 90px/s the pattern moves 3.6px a frame against a 15.5px repeat, which is
+fine; at 7px dots and 230px/s it measured −2.5px a frame, i.e. backwards.
 
 **Off** — the arches draw in and stay put. Both Flow and Off hold the circuit
 at full opacity, since there are no pulses for it to step back behind.

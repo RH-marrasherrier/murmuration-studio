@@ -187,14 +187,14 @@ const D = {
   houseFade: 0.60, mode: "sequence",
   lineDim: 0.4,        // the drawn circuit settles to this once pulses start
   layout: "ring",      // "ring" | "spokes" arches, or "wires" for the old circuit
-  arch: 0.42,          // control-point lift, as a fraction of the chord
-  dashLen: 12,         // px of drawn dash along an arch
+  arch: 0.58,          // control-point lift, as a fraction of the chord
+  dashLen: 7.5,        // px of drawn dash along an arch
   dotGap: 8,           // px of gap between dashes
   source: "devices",   // "loop" = pulses circling; "devices" = emitted by each device
   showLine: 1,         // 0 hides the circuit, leaving only the pulses
-  energy: "pulses",    // "pulses" | "flow" (the dots march) | "off"
+  energy: "flow",      // "pulses" | "flow" (the dashes march) | "off"
   emitEvery: 0.50,     // seconds between successive emissions (one device each)
-  pulseSpeed: 230      // px/sec outward
+  pulseSpeed: 90       // px/sec outward
 };
 const q = new URLSearchParams(location.search);
 const num = k => q.has(k) ? parseFloat(q.get(k)) : D[k];
