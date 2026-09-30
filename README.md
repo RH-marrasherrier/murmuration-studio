@@ -25,6 +25,24 @@ Then open <http://127.0.0.1:3477/>.
 
 Requires `python3`, `ffmpeg`, and Google Chrome at the standard macOS path.
 
+## Presets
+
+Three looks ship on the versions bar along the top, and the studio opens on
+**glow**:
+
+| preset | energy | arches |
+|---|---|---|
+| **glow** | pulses, 70px long, 75% soft, every 0.8s | 66% arch, effectively solid (60/1) |
+| **dots** | the dashes flow at 90px/s | 58% arch, 0.5px dots on 10.5px gaps, 1.5px line |
+| **dot pulse** | pulses, 20px long, every 1.5s, 10px halo | 58% arch, 0.5px dots on 6.5px gaps |
+
+They are built into the file rather than stored in the browser, so they cannot
+be deleted and they travel with the studio. Loading one returns every other
+control to its default, so clicking between presets always lands on the same
+look. Versions you save yourself appear after them and are removable; **back up
+versions** writes them to `glow-versions.json` when the studio runs locally, or
+copies them to the clipboard otherwise.
+
 ## Controls
 
 ### Circuit line

@@ -630,8 +630,11 @@
       <div class="row"><label for="e_vname">Name</label>
         <input type="text" id="e_vname" spellcheck="false" placeholder="e.g. dotted slow" style="flex:1"></div>
       <button class="primary" id="b_vsave">Save version</button>
-      <div class="hint">Saved in this browser and listed along the top. Click one
-        to load it back; the x removes it. Saving over a name replaces it.</div>
+      <div class="row" style="margin-top:7px"><button id="b_vexport" style="flex:1">Back up versions</button></div>
+      <div class="hint" id="vexportMsg">Saved in this browser and listed along the
+        top. Click one to load it back; the x removes it. Saving over a name
+        replaces it. Back up writes them to disk when run locally, and copies
+        them to the clipboard otherwise.</div>
     </fieldset>
 
     <fieldset><legend>Export</legend>
@@ -657,24 +660,24 @@
 <script>
 const D = {
   lineW: 1, colour: "powder", glowW: 8.5, glowStroke: 0.5,
-  pulses: 3, pulseLen: 60, cycles: 3, flowW: 4,
+  pulses: 3, pulseLen: 70, cycles: 3, flowW: 4,
   houseFade: 0.60, mode: "sequence",
   layout: "ring",      // "ring" | "spokes" arches, or "wires" for the old circuit
-  arch: 0.58,          // control-point lift, as a fraction of the chord
-  dashLen: 7.5,        // px of drawn dash along an arch
-  pulseSoft: 0.6,      // share of a pulse that ramps up from its tail
+  arch: 0.66,          // control-point lift, as a fraction of the chord
+  dashLen: 60,        // px of drawn dash along an arch
+  pulseSoft: 0.75,      // share of a pulse that ramps up from its tail
   revealFade: 0.55,    // how much of a growing arch fades toward its tip
   archAlpha: 1,        // opacity of the arch lines; pulses are unaffected
   devPlane: "keyframe",// "keyframe" heights, or "level" = one shared rise
   planeRise: 254,      // art units every device rises in level mode
   swapAt: 0.12,        // lift fraction at which closed art gives way to exploded
   archDim: 0.4,        // what that settles to once pulses start
-  dotGap: 8,           // px of gap between dashes
+  dotGap: 1,           // px of gap between dashes
   source: "devices",   // "loop" = pulses circling; "devices" = emitted by each device
   showLine: 1,         // 0 hides the circuit, leaving only the pulses
-  energy: "flow",      // "pulses" | "flow" (the dashes march) | "off"
-  emitEvery: 0.50,     // seconds between successive emissions (one device each)
-  pulseSpeed: 90       // px/sec outward
+  energy: "pulses",      // "pulses" | "flow" (the dashes march) | "off"
+  emitEvery: 0.8,     // seconds between successive emissions (one device each)
+  pulseSpeed: 90
 };
 const q = new URLSearchParams(location.search);
 const num = k => q.has(k) ? parseFloat(q.get(k)) : D[k];
@@ -1422,39 +1425,46 @@ if(UI){
     return out;
   }
   function applyVersion(v){
-    for (const k of VFIELDS) if (k in v) S[k] = v[k];
+    // fields a version does not mention go back to the default, so clicking
+    // between presets always lands on the same look
+    for (const k of VFIELDS) S[k] = (k in v) ? v[k] : D[k];
+    for (const key in TRIM) delete TRIM[key];
     paintBg(normBg(S.bg) || D.bg);
     $("e_bg").value = S.bg;
     buildLegs(); buildPool(); applyStyle(); sync(); draw();
   }
+  /* Shipped presets. They are kept out of localStorage so they cannot be
+     deleted by accident and so they travel with the file. */
+  const PRESETS = [{"name":"dots","settings":{"arch":0.58,"dashLen":0.5,"dotGap":10.5,"lineW":1.5,"pulseLen":60,"flowW":4,"pulseSpeed":90,"emitEvery":0.5,"colour":"powder","mode":"sequence","layout":"ring","source":"devices","energy":"flow","showLine":1,"bg":"#060606"}},{"name":"glow","settings":{"arch":0.66,"dashLen":60,"dotGap":1,"lineW":1,"pulseLen":70,"pulseSoft":0.75,"flowW":4,"pulseSpeed":90,"emitEvery":0.8,"colour":"powder","mode":"sequence","layout":"ring","source":"devices","energy":"pulses","showLine":1,"bg":"#060606"}},{"name":"dot pulse","settings":{"arch":0.58,"dashLen":0.5,"dotGap":6.5,"revealFade":0.9,"lineW":1,"pulseLen":20,"pulseSoft":0.75,"flowW":10,"pulseSpeed":70,"emitEvery":1.5,"colour":"powder","mode":"sequence","layout":"ring","source":"devices","energy":"pulses","showLine":1,"bg":"#060606"}}];
+
+  function chip(v, onDelete){
+    const c = document.createElement("span");
+    c.className = "chip";
+    const open = document.createElement("button");
+    open.textContent = v.name;
+    open.title = "Load this version";
+    open.addEventListener("click", () => applyVersion(v.settings));
+    c.appendChild(open);
+    if (onDelete) {
+      const del = document.createElement("button");
+      del.className = "x"; del.textContent = "\u00d7"; del.title = "Remove";
+      del.addEventListener("click", onDelete);
+      c.appendChild(del);
+    }
+    return c;
+  }
+
   function renderVersions(){
     const list = loadVersions(), host = $("vlist");
     host.textContent = "";
-    if (!list.length) {
-      const n = document.createElement("span");
-      n.className = "none"; n.textContent = "none saved yet";
-      host.appendChild(n);
-      return;
-    }
+    for (const v of PRESETS) host.appendChild(chip(v, null));
     list.forEach((v, i) => {
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      const open = document.createElement("button");
-      open.textContent = v.name;
-      open.title = "Load this version";
-      open.addEventListener("click", () => applyVersion(v.settings));
-      const del = document.createElement("button");
-      del.className = "x";
-      del.textContent = "\u00d7";
-      del.title = "Remove";
-      del.addEventListener("click", () => {
+      host.appendChild(chip(v, () => {
         const cur = loadVersions();
         cur.splice(i, 1);
         storeVersions(cur);
         renderVersions();
-      });
-      chip.appendChild(open); chip.appendChild(del);
-      host.appendChild(chip);
+      }));
     });
   }
   $("b_vsave").addEventListener("click", () => {
@@ -1469,6 +1479,29 @@ if(UI){
     if (!ok) $("vlist").insertAdjacentHTML("beforeend",
       '<span class="none">could not save \u2014 browser storage unavailable</span>');
   });
+  /* Versions live in this browser only. Backing them up writes a file next to
+     the studio when it is served locally, and falls back to the clipboard so
+     they can be moved off a static host. */
+  $("b_vexport").addEventListener("click", async () => {
+    const payload = JSON.stringify(loadVersions(), null, 2);
+    const msg = t => { $("vexportMsg").textContent = t; };
+    if (LOCAL) {
+      try {
+        const r = await fetch("/save/glow-versions.json",
+          {method:"POST", headers:{"Content-Type":"application/json"}, body:payload});
+        const j = await r.json();
+        return msg("Wrote " + j.saved + " (" + j.bytes + " bytes) next to the studio.");
+      } catch (e) { /* fall through to the clipboard */ }
+    }
+    try {
+      await navigator.clipboard.writeText(payload);
+      msg("Copied " + loadVersions().length + " versions to the clipboard.");
+    } catch (e) {
+      msg("Could not copy. The JSON is in the console.");
+      console.log(payload);
+    }
+  });
+
   renderVersions();
 
   /* A dash pattern that advances more than half its period between frames
