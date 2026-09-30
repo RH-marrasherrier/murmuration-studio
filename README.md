@@ -4,6 +4,11 @@ A local tuning studio for the Renew Home house-build animation — an isometric
 home that opens up, gains devices, then has energy travel between them along
 dashed arches.
 
+The illustration is inline SVG, exported from the Everyday Brand Kit file and
+split into layers, so it is crisp at any size and the fills can be recoloured
+directly. `assets/house-anim-v2/` keeps the layer sources; nothing there is
+loaded at runtime.
+
 Sliders change the animation live in the browser; the export button runs the
 real render pipeline at full quality with whatever is on screen.
 
@@ -33,16 +38,12 @@ lift as a share of the chord.
 thickness. Line weight also drives the bright core of a travelling pulse, so a
 pulse reads as riding the arch rather than sitting beside it.
 
-Device centres were measured from the layer positions rather than estimated.
-The arches and their lengths:
-
-| arch | length |
-|---|---|
-| thermostat → HVAC | 124px |
-| HVAC → car | 341px |
-| car → battery | 265px |
-| battery → solar | 209px |
-| solar → thermostat | 372px |
+An arch is built centre-to-centre, so it aims at the middle of each device,
+then trimmed back to where it crosses that device's outline. A bounding box is
+not enough: the solar panel is a tilted parallelogram, so its box edge sits in
+empty space and the arch stops short of the visible art. Each device's
+silhouette is measured as the x range its art covers in every 2px band, and the
+curve is trimmed to that.
 
 ### Energy flow
 
@@ -64,6 +65,19 @@ fine; at 7px dots and 230px/s it measured −2.5px a frame, i.e. backwards.
 **Off** — the arches draw in and stay put. Both Flow and Off hold the circuit
 at full opacity, since there are no pulses for it to step back behind.
 
+**Roof swap at** — the closed roof art is a gable with hip faces and the
+exploded art is a detached flat plane, so switching between them is a shape
+change, not a move. `easeInOut` holds the lift at zero for the first frames, so
+swapping at 0% puts that change on a completely stationary roof and it reads as
+the roof dropping. The closed art is carried up for the first 12% of the lift
+instead, which hides the change in the motion. Both copies sit at identical
+heights at the swap, so there is no positional jump.
+
+Each exploded piece is also clipped at its closed bottom edge, because the
+exploded art carries underside edges the closed art has none of — roof 1 gains
+75px and roof 2 gains 27px at the bottom. The clip hides that until the piece
+has risen past the line.
+
 ### Scene
 
 **Background** takes any hex, with or without the `#`, plus `none` for a
@@ -72,6 +86,14 @@ an SVG filter ramps each channel from the background at 0 to the stroke colour
 at 1, which keeps the fills opaque occluders — a blend mode would let lower
 layers show through the roof planes. Above 50% background luminance the stroke
 end flips dark, or the house would dissolve into a light backdrop.
+
+**Device heights** — *Keyframe* raises each device its own amount, read off the
+two source frames (solar 289, A/C 305, battery 248, car 175 art units). *One
+plane* raises them all by the same amount instead, set by **plane height**, so
+the set keeps its isometric relationship and reads as one level. The devices do
+not start coplanar — solar is on the roof, battery and A/C on the ground, the
+car on the driveway — so a shared screen height would scramble the arrangement.
+The arches follow the devices in both modes.
 
 **Devices** arrive one by one, or start all present.
 

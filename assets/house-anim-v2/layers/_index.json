@@ -1,0 +1,100 @@
+{
+  "x_base": {
+    "layer": "Base",
+    "frame": "exploded",
+    "bytes": 446,
+    "paths": 3,
+    "rects": 0
+  },
+  "x_lawn": {
+    "layer": "Lawn",
+    "frame": "exploded",
+    "bytes": 1187,
+    "paths": 8,
+    "rects": 0
+  },
+  "x_floor1": {
+    "layer": "Floor 1",
+    "frame": "exploded",
+    "bytes": 7748,
+    "paths": 45,
+    "rects": 0
+  },
+  "x_trees": {
+    "layer": "Trees",
+    "frame": "exploded",
+    "bytes": 14393,
+    "paths": 72,
+    "rects": 0
+  },
+  "x_floor2": {
+    "layer": "Floor 2",
+    "frame": "exploded",
+    "bytes": 1153,
+    "paths": 6,
+    "rects": 0
+  },
+  "h_floor2": {
+    "layer": "Floor 2",
+    "frame": "closed",
+    "bytes": 1138,
+    "paths": 6,
+    "rects": 0
+  },
+  "x_roof1": {
+    "layer": "Roof 1",
+    "frame": "exploded",
+    "bytes": 3566,
+    "paths": 21,
+    "rects": 0
+  },
+  "h_roof1": {
+    "layer": "Roof 1",
+    "frame": "closed",
+    "bytes": 3557,
+    "paths": 22,
+    "rects": 0
+  },
+  "x_roof2": {
+    "layer": "Roof 2",
+    "frame": "exploded",
+    "bytes": 1787,
+    "paths": 11,
+    "rects": 0
+  },
+  "h_roof2": {
+    "layer": "Roof 2",
+    "frame": "closed",
+    "bytes": 1782,
+    "paths": 11,
+    "rects": 0
+  },
+  "x_ac": {
+    "layer": "A/C",
+    "frame": "exploded",
+    "bytes": 2801,
+    "paths": 10,
+    "rects": 0
+  },
+  "x_battery": {
+    "layer": "Battery",
+    "frame": "exploded",
+    "bytes": 948,
+    "paths": 6,
+    "rects": 0
+  },
+  "x_car": {
+    "layer": "Car",
+    "frame": "exploded",
+    "bytes": 8790,
+    "paths": 40,
+    "rects": 0
+  },
+  "x_solar": {
+    "layer": "Solar",
+    "frame": "exploded",
+    "bytes": 4405,
+    "paths": 40,
+    "rects": 0
+  }
+}
