@@ -83,18 +83,37 @@ fine; at 7px dots and 230px/s it measured −2.5px a frame, i.e. backwards.
 **Off** — the arches draw in and stay put. Both Flow and Off hold the circuit
 at full opacity, since there are no pulses for it to step back behind.
 
-**Roof swap at** — the closed roof art is a gable with hip faces and the
-exploded art is a detached flat plane, so switching between them is a shape
-change, not a move. `easeInOut` holds the lift at zero for the first frames, so
-swapping at 0% puts that change on a completely stationary roof and it reads as
-the roof dropping. The closed art is carried up for the first 12% of the lift
-instead, which hides the change in the motion. Both copies sit at identical
-heights at the swap, so there is no positional jump.
+### The roof lift
 
-Each exploded piece is also clipped at its closed bottom edge, because the
-exploded art carries underside edges the closed art has none of — roof 1 gains
-75px and roof 2 gains 27px at the bottom. The clip hides that until the piece
-has risen past the line.
+Closed and exploded roof art are different shapes, not the same shape moved:
+the closed roof is a gable with hip faces, the exploded one a detached plane
+showing its underside. Roof 1 is 425 art units tall closed and 500 exploded.
+Switching between two states put that whole change on one frame, and because
+`easeInOut` holds the lift at zero for the first frames it landed on a
+completely stationary roof — which read as the roof dropping before it rose.
+
+Three source keyframes fix it. Keyframe 2 supplies an intermediate roof 1 at
+458 units, so the change is staged:
+
+| piece | states | at lift |
+|---|---|---|
+| roof 1 | closed 425 → mid 458 → exploded 500 | 0, 12.5%, 35% |
+| roof 2 | closed 352 → exploded 379 | 0, 8.3% |
+| floor 2 | one state, 428 throughout | translate only |
+
+The 12.5% and 8.3% figures are where keyframe 2 actually sits (roof 1 has risen
+47.8 of its 381, roof 2 38.0 of its 456.7), so the art changes at the lift it
+was drawn for. Each state's position comes from its own bounding box rather
+than being tracked by hand, so the piece's on-screen top runs continuously from
+735 to 354 with no discontinuity at either handover.
+
+Measured on the render: the two changeover frames alter 4,984 and 5,624 pixels,
+against a mean of 1,949 and a maximum of 5,624 across the lift — so they sit
+inside the range of ordinary fast motion rather than standing out as pops. The
+top edge never moves down on any of the 62 frames.
+
+Each exploded piece is also clipped at its closed bottom edge, which hides the
+underside it gains until the piece has risen past the line.
 
 ### Scene
 
