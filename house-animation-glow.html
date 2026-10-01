@@ -14,7 +14,11 @@
   /* House layers are fill=black + stroke=#9BA3B0; the devices are blue and are
      deliberately left alone. CSS beats the presentation attribute, so the fill
      can follow the background without touching the artwork. */
-  #artHouse path { fill:var(--hfill); stroke:var(--hstroke); }
+  /* Stroke width is set in stage pixels, not art units. Scaling the art to
+     995px would otherwise render its 1-unit strokes at 0.65px, which isolated
+     lines survive but the stair treads do not — 19 closely spaced lines
+     antialias into nothing. */
+  #artHouse path { fill:var(--hfill); stroke:var(--hstroke); stroke-width:var(--hsw); }
   #svg { position:absolute; inset:0; display:block; pointer-events:none; }
 
   body.ui { background:#0b0b0d; font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
@@ -100,9 +104,9 @@
 <path id="Vector_24" d="M647.82 804.081L694.44 831.001V842.961L647.82 816.041V804.081Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_25" d="M632.28 825.001L678.9 851.941L678.88 863.881L632.28 836.981V825.001Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_26" d="M616.74 845.941L663.36 872.861L663.34 884.821L616.74 857.921V845.941Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_27" d="M601.2 866.88L647.82 893.8L647.8 905.76L601.2 878.841V866.88Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_27" d="M601.2 866.881L647.82 893.801L647.8 905.761L601.2 878.841V866.881Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_28" d="M741.08 690.461L787.68 717.361L772.14 726.341L725.54 699.421L741.08 690.461Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_29" d="M725.54 711.38L772.14 738.3L756.6 747.26L710 720.36L725.54 711.38Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_29" d="M725.54 711.381L772.14 738.301L756.6 747.261L710 720.361L725.54 711.381Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_30" d="M710 732.321L756.6 759.221L741.08 768.201L694.46 741.281L710 732.321Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_31" d="M694.46 753.241L741.08 780.161L725.54 789.121L678.92 762.221L694.46 753.241Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_32" d="M678.94 774.18L725.54 801.08L710 810.06L663.38 783.14L678.94 774.18Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
@@ -118,7 +122,7 @@
 <path id="Vector_42" d="M974.14 795.1L1119.14 878.82L994.84 950.58L974.12 938.62L974.14 795.1Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_43" d="M1124.34 881.821L989.66 959.541V1103.08L1124.34 1025.36V881.821Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_44" d="M984.46 956.541V1100.08L989.66 1103.08V959.541L984.46 956.541Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_45" d="M870.56 884.8L818.76 914.7V1010.38L1041.46 1138.94L1181.28 1058.22L1124.34 1025.36L989.66 1103.08L984.46 1100.08V956.54L994.84 950.58L974.12 938.62L875.72 995.44L870.54 992.44L870.56 884.8Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_45" d="M870.56 884.801L818.76 914.701V1010.38L1041.46 1138.94L1181.28 1058.22L1124.34 1025.36L989.66 1103.08L984.46 1100.08V956.54L994.84 950.581L974.12 938.621L875.72 995.441L870.54 992.441L870.56 884.801Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_46" d="M1124.34 881.821L1305.58 986.461L1181.28 1058.22L1124.34 1025.36V881.821Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_47" d="M1315.94 986.461V1129.98L1041.46 1288.46V1144.92L1315.94 986.461Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_48" d="M704.82 950.581V1094.1L1041.46 1288.46V1144.92L704.82 950.581Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
@@ -190,7 +194,7 @@
 <g id="Group_10">
 <path id="Vector_77" d="M849.839 1465.04C864.144 1465.04 875.739 1461 875.739 1456.02C875.739 1451.04 864.144 1447 849.839 1447C835.535 1447 823.939 1451.04 823.939 1456.02C823.939 1461 835.535 1465.04 849.839 1465.04Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_78" d="M855.019 1456.02C855.019 1456.76 852.699 1457.82 849.839 1457.82C846.979 1457.82 844.659 1457.02 844.659 1456.02V1442.88H855.019V1456.02Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_79" d="M849.839 1444.68C852.7 1444.68 855.019 1443.87 855.019 1442.88C855.019 1441.89 852.7 1441.08 849.839 1441.08C846.978 1441.08 844.659 1441.89 844.659 1442.88C844.659 1443.87 846.978 1444.68 849.839 1444.68Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_79" d="M849.839 1444.68C852.7 1444.68 855.019 1443.88 855.019 1442.88C855.019 1441.89 852.7 1441.08 849.839 1441.08C846.978 1441.08 844.659 1441.89 844.659 1442.88C844.659 1443.88 846.978 1444.68 849.839 1444.68Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <g id="Group_11">
 <path id="Vector_80" d="M849.839 1447.04C864.144 1447.04 875.739 1443 875.739 1438.02C875.739 1433.04 864.144 1429 849.839 1429C835.535 1429 823.939 1433.04 823.939 1438.02C823.939 1443 835.535 1447.04 849.839 1447.04Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <g id="Vector_81">
@@ -377,8 +381,8 @@
 <path id="Vector_127" d="M471.78 854.161L471.76 848.181L704.82 713.621V719.621L471.78 854.161Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 </g>
 <g id="Group_27">
-<path id="Vector_128" d="M238.72 662.061L347.48 623.201L352.66 626.181L461.42 790.641V784.661L352.66 620.201L347.48 617.221L238.72 656.081V662.061Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_129" d="M347.479 623.201V617.221L352.659 620.201V626.181L347.479 623.201Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_128" d="M238.72 662.061L347.48 623.202L352.66 626.181L461.42 790.642V784.661L352.66 620.202L347.48 617.221L238.72 656.082V662.061Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_129" d="M347.479 623.202V617.221L352.659 620.202V626.181L347.479 623.202Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_130" d="M347.479 617.221L590.9 476.681L596.059 479.681L352.659 620.201L347.479 617.221Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_131" d="M461.42 784.661L704.82 644.121L596.06 479.681L352.66 620.201L461.42 784.661Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_132" d="M238.72 656.081L482.14 515.561L590.9 476.681L347.48 617.221L238.72 656.081Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
@@ -388,7 +392,7 @@
 <path id="Vector_134" d="M1041.46 772.821L1191.64 557.601L1196.82 554.601L1336.64 603.061V609.041L1196.82 560.581L1191.64 563.581L1041.46 778.801V772.821Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_135" d="M1041.46 772.821L694.46 572.481V578.461L1041.46 778.801V772.821Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_136" d="M1336.64 603.061L989.66 402.741L849.84 354.281L1196.82 554.601L1336.64 603.061Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_137" d="M1191.64 557.601L844.66 357.261L694.46 572.481L1041.46 772.821L1191.64 557.601Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_137" d="M1191.64 557.601L844.66 357.262L694.46 572.481L1041.46 772.822L1191.64 557.601Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_138" d="M844.66 357.261L849.84 354.281L1196.82 554.601V560.581L1191.64 563.581V557.601L844.66 357.261Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 </g>
 </g></g><g id="h_roof2"><g transform="translate(0,456.7400)"><g id="Roof 2">
@@ -410,17 +414,17 @@
 </g></g></g><g id="x_roof2"><g id="Roof 2">
 <g id="Group_28">
 <path id="Vector_139" d="M482.14 250.861V244.881L590.88 206.021L596.06 209.001L704.82 373.461V379.441L482.14 250.861Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_140" d="M482.14 244.88L590.88 206.02L865.36 47.5401L756.62 86.4201L482.14 244.88Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_141" d="M596.06 209L590.88 206.02L865.36 47.5402L870.54 50.5402L596.06 209Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_142" d="M704.82 373.46L596.06 209L870.54 50.5402L979.3 214.98L704.82 373.46Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_140" d="M482.14 244.88L590.88 206.02L865.36 47.5402L756.62 86.4202L482.14 244.88Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_141" d="M596.06 209L590.88 206.02L865.36 47.5403L870.54 50.5403L596.06 209Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_142" d="M704.82 373.46L596.06 209L870.54 50.5403L979.3 214.98L704.82 373.46Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_143" d="M704.819 379.441V373.461L979.299 214.981V220.961L704.819 379.441Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 </g>
 <g id="Group_29">
-<path id="Vector_144" d="M461.42 219.48L580.54 176.9L585.72 179.9L699.64 352.16V346.18L585.72 173.92L580.54 170.92L461.42 213.5V219.48Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_145" d="M580.54 176.9V170.92L585.72 173.92V179.9L580.54 176.9Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_146" d="M580.54 170.92L875.74 0.500092L880.92 3.48009L585.72 173.92L580.54 170.92Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_147" d="M699.64 346.181L994.84 175.761L880.92 3.48056L585.72 173.921L699.64 346.181Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
-<path id="Vector_148" d="M461.42 213.5L756.62 43.08L875.74 0.5L580.54 170.92L461.42 213.5Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_144" d="M461.42 219.48L580.54 176.9L585.72 179.9L699.64 352.161V346.18L585.72 173.921L580.54 170.921L461.42 213.501V219.48Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_145" d="M580.54 176.9V170.921L585.72 173.921V179.9L580.54 176.9Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_146" d="M580.54 170.92L875.74 0.500183L880.92 3.48018L585.72 173.92L580.54 170.92Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_147" d="M699.64 346.181L994.84 175.761L880.92 3.48065L585.72 173.921L699.64 346.181Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
+<path id="Vector_148" d="M461.42 213.5L756.62 43.0801L875.74 0.500092L580.54 170.92L461.42 213.5Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 <path id="Vector_149" d="M699.64 352.16V346.18L994.84 175.76L994.86 181.74L699.64 352.16Z" fill="black" stroke="#9BA3B0" stroke-linejoin="round"/>
 </g>
 </g></g></svg>
@@ -530,13 +534,13 @@
 <path id="Vector_205" d="M402.22 646.021L465.16 741.201L554.88 689.361L557.28 684.761L467.56 736.601L404.64 641.421L402.22 646.021Z" fill="#3C77FF" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_206" d="M468.74 730.001L411.5 643.401L493.18 596.201L550.42 682.781L468.74 730.001Z" fill="#3C77FF" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_207" d="M465.16 741.2L467.56 736.6" stroke="white" stroke-linejoin="round"/>
-<path id="Vector_208" d="M417.2 652.06L498.92 604.88" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_208" d="M417.2 652.061L498.92 604.881" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_209" d="M422.939 660.721L504.619 613.541" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_210" d="M428.66 669.38L510.32 622.22" stroke="white" stroke-linejoin="round"/>
-<path id="Vector_211" d="M434.38 678.021L516.02 630.88" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_211" d="M434.38 678.021L516.02 630.881" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_212" d="M440.1 686.681L521.74 639.561" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_213" d="M445.819 695.34L527.439 648.22" stroke="white" stroke-linejoin="round"/>
-<path id="Vector_214" d="M451.58 703.98L533.14 656.88" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_214" d="M451.58 703.981L533.14 656.881" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_215" d="M457.279 712.641L538.839 665.561" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_216" d="M462.979 721.3L544.539 674.22" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_217" d="M484 601.541L540.96 688.241" stroke="white" stroke-linejoin="round"/>
@@ -548,7 +552,7 @@
 <path id="Vector_223" d="M421.819 637.441L478.799 724.141" stroke="white" stroke-linejoin="round"/>
 </g>
 <g id="Group_37">
-<path id="Vector_224" d="M574.081 673.961L511.141 578.781L600.881 526.922L663.801 622.102L574.081 673.961Z" fill="#3C77FF" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_224" d="M574.081 673.962L511.141 578.782L600.881 526.922L663.801 622.102L574.081 673.962Z" fill="#3C77FF" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_225" d="M508.74 583.362L571.66 678.542L661.38 626.702L663.8 622.102L574.08 673.962L511.14 578.782L508.74 583.362Z" fill="#3C77FF" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_226" d="M575.26 667.342L518 580.742L599.68 533.542L656.94 620.142L575.26 667.342Z" fill="#3C77FF" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_227" d="M571.66 678.542L574.08 673.962" stroke="white" stroke-linejoin="round"/>
@@ -561,10 +565,10 @@
 <path id="Vector_234" d="M558.101 641.322L639.661 594.242" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_235" d="M563.8 650.001L645.36 602.901" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_236" d="M569.5 658.662L651.06 611.582" stroke="white" stroke-linejoin="round"/>
-<path id="Vector_237" d="M590.521 538.881L647.48 625.601" stroke="white" stroke-linejoin="round"/>
-<path id="Vector_238" d="M580.141 544.881L637.121 631.581" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_237" d="M590.521 538.882L647.48 625.602" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_238" d="M580.141 544.882L637.121 631.582" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_239" d="M569.78 550.862L626.76 637.562" stroke="white" stroke-linejoin="round"/>
-<path id="Vector_240" d="M559.42 556.841L616.4 643.541" stroke="white" stroke-linejoin="round"/>
+<path id="Vector_240" d="M559.42 556.841L616.4 643.542" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_241" d="M549.061 562.822L606.021 649.522" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_242" d="M538.7 568.801L595.66 655.521" stroke="white" stroke-linejoin="round"/>
 <path id="Vector_243" d="M528.34 574.782L585.3 661.502" stroke="white" stroke-linejoin="round"/>
@@ -585,10 +589,14 @@
         <input type="range" id="c_dashLen" min="0.5" max="60" step="0.5"><output id="o_dashLen"></output></div>
       <div class="row"><label for="c_dotGap">Dash gap</label>
         <input type="range" id="c_dotGap" min="1" max="40" step="0.5"><output id="o_dotGap"></output></div>
+      <div class="row"><label for="c_houseStroke">House line weight</label>
+        <input type="range" id="c_houseStroke" min="0.4" max="3" step="0.1"><output id="o_houseStroke"></output></div>
       <div class="row"><label for="c_archAlpha">Arch opacity</label>
         <input type="range" id="c_archAlpha" min="0" max="1" step="0.05"><output id="o_archAlpha"></output></div>
       <div class="row"><label for="c_archDim">Arch opacity after pulses start</label>
         <input type="range" id="c_archDim" min="0" max="1" step="0.05"><output id="o_archDim"></output></div>
+      <div class="row"><label for="c_archFade">Fade over</label>
+        <input type="range" id="c_archFade" min="0.1" max="5" step="0.1"><output id="o_archFade"></output></div>
       <div class="hint">Only applies in Pulses mode &mdash; Flow and Off have no
         moment for the line to step back behind, so they hold the value above.</div>
       <div class="row"><label for="c_revealFade">Draw-in fade</label>
@@ -692,6 +700,10 @@ const D = {
   lineW: 1, colour: "powder", glowW: 8.5, glowStroke: 0.5,
   pulses: 3, pulseLen: 70, cycles: 3, flowW: 4,
   houseFade: 0.60, mode: "sequence",
+  /* House line weight in stage px. 0.65 is the art's own 1 unit at this scale,
+     i.e. faithful to Figma; higher values trade fidelity for legibility when
+     rendering at 1x, where fine detail like the stair treads washes out. */
+  houseStroke: 0.65,
   layout: "ring",      // "ring" | "spokes" arches, or "wires" for the old circuit
   arch: 0.66,          // control-point lift, as a fraction of the chord
   dashLen: 60,        // px of drawn dash along an arch
@@ -706,6 +718,7 @@ const D = {
      art by then. Floor 2's art never changes, so it only translates. */
   swapAt: 0.125,
   archDim: 0.4,        // what that settles to once pulses start
+  archFade: 1.6,       // seconds the arches take to settle to it
   dotGap: 1,           // px of gap between dashes
   source: "devices",   // "loop" = pulses circling; "devices" = emitted by each device
   showLine: 1,         // 0 hides the circuit, leaving only the pulses
@@ -719,9 +732,11 @@ const S = {
   w: 995, h: 1066, bg: "#060606",
   // Each device gets its own short beat: they fade in 0.75s apart rather than
   // 1.45s, and the time saved goes to the energy flow at the end.
-  t: { T1:[0.25,1.45], T2:[1.60,2.20], T3:[2.35,2.95],
-       T4:[3.10,3.70], T5:[3.95,5.15], T6:[5.40,6.60] },
-  flow: [6.60, 12.00], total: 12.00,
+  /* Devices fade in first, on the closed house — which is exactly keyframe 1 —
+     then the roof lifts (keyframe 2 into 3), then they rise, then the arches. */
+  t: { T2:[0.25,0.60], T3:[0.75,1.10], T4:[1.25,1.60], TB:[1.75,2.10],
+       T1:[2.35,3.55], T5:[3.80,5.00], T6:[5.25,6.45] },
+  flow: [6.45, 12.00], total: 12.00,
   /* Rise from the closed keyframe to the exploded one, in art units, read
      straight off the two frames' layer coordinates rather than measured. */
   rise: { floor2:316.94, roof1:381.02, roof2:456.74,
@@ -730,11 +745,12 @@ const S = {
   lineW:num("lineW"), colour:(q.get("colour")||D.colour), glowW:num("glowW"),
   glowStroke:num("glowStroke"), pulses:num("pulses"), pulseLen:num("pulseLen"),
   cycles:num("cycles"), flowW:num("flowW"), houseFade:num("houseFade"),
-  mode:(q.get("mode")||D.mode),
+  mode:(q.get("mode")||D.mode), houseStroke:num("houseStroke"),
   source:(q.get("source")||D.source), showLine:num("showLine"),
   layout:(q.get("layout")||D.layout), arch:num("arch"),
   dashLen:num("dashLen"), dotGap:num("dotGap"), pulseSoft:num("pulseSoft"),
   revealFade:num("revealFade"), archAlpha:num("archAlpha"), archDim:num("archDim"),
+  archFade:num("archFade"),
   devPlane:(q.get("devPlane")||D.devPlane), planeRise:num("planeRise"),
   swapAt:num("swapAt"),
   energy:(q.get("energy")||D.energy),
@@ -805,7 +821,7 @@ const place = (el,x,y,op) => { el.style.left=x+"px"; el.style.top=y+"px"; el.sty
    lift. A state's own bbox top tells us where it belongs, so the geometry is
    read from the art rather than tracked by hand. */
 const SWAP = {
-  floor2: [["x_floor2", 0]],
+  floor2: [["x_floor2", 1]],        // one state, authored at full lift
   roof1:  [["h_roof1", 0], ["m_roof1", 0.125], ["x_roof1", 0.35]],
   roof2:  [["h_roof2", 0], ["x_roof2", 0.083]]
 };
@@ -821,7 +837,10 @@ function measureSwap(){
     });
     // the closed state anchors the piece; the rest are offset onto its track
     const ref = states[states.length-1];           // exploded state sets x
-    const closedTop = states[0].top;
+    // Back out where the piece sits closed. A state authored for lift L sits
+    // rise*L above the closed position, so every state implies the same anchor
+    // — floor 2's only state is authored at full lift, not at rest.
+    const closedTop = states[0].top + S.rise[k]*states[0].lift;
     for (const st of states) {
       st.dx = ref.left - st.left;
       st.dy0 = (closedTop - S.rise[k]*st.lift) - st.top;
@@ -1224,11 +1243,10 @@ function render(t){
     const target=id => S.devPlane==="level" ? S.planeRise : S.rise[id];
     const fadeIn=(id,from,to)=>
       put($(id), S.rise[id] - align*target(id), seg(T,from,to));
-    const t1mid=lerp(tt.T1[0],tt.T1[1],0.5);
-    fadeIn("ac",t1mid,tt.T1[1]);
-    fadeIn("car",tt.T2[0],tt.T2[0]+0.35);
-    fadeIn("solar",tt.T3[0],tt.T3[0]+0.35);
-    fadeIn("battery",tt.T4[0],tt.T4[0]+0.35);
+    fadeIn("ac",     tt.T2[0], tt.T2[0]+0.35);
+    fadeIn("car",    tt.T3[0], tt.T3[0]+0.35);
+    fadeIn("solar",  tt.T4[0], tt.T4[0]+0.35);
+    fadeIn("battery",tt.TB[0], tt.TB[0]+0.35);
   }
 
   // ---- circuit grows out of the HVAC in both directions. The path's own gap
@@ -1239,7 +1257,8 @@ function render(t){
   // read as the event. Flow and Off have no such moment, so they hold.
   const fsDim = flowStartT();
   const archNow = S.energy === "pulses"
-    ? S.archAlpha + (S.archDim - S.archAlpha) * easeInOut(seg(T, fsDim, fsDim + 0.7))
+    ? S.archAlpha + (S.archDim - S.archAlpha)
+        * easeInOut(seg(T, fsDim, fsDim + Math.max(0.05, S.archFade)))
     : S.archAlpha;
 
   const arches = S.layout !== "wires";
@@ -1358,6 +1377,7 @@ function tintHouse(v){
   // The layers are real vectors now, so the fill is set directly rather than
   // ramped through a filter. The stroke flips dark on a light backdrop, or the
   // house would dissolve into it.
+  document.documentElement.style.setProperty("--hsw", (S.houseStroke / ART_SCALE) + "");
   document.documentElement.style.setProperty("--hfill", c);
   document.documentElement.style.setProperty("--hstroke",
     lum > 0.5 ? "#2B3138" : "#9BA3B0");
@@ -1382,11 +1402,12 @@ if(UI){
   };
   addEventListener("resize",fit); fit();
 
-  const KEYS=["arch","dashLen","dotGap","archAlpha","archDim","revealFade","planeRise","swapAt","lineW","pulseLen","pulseSoft","flowW","pulseSpeed","emitEvery"];
+  const KEYS=["arch","dashLen","dotGap","houseStroke","archAlpha","archDim","archFade","revealFade","planeRise","swapAt","lineW","pulseLen","pulseSoft","flowW","pulseSpeed","emitEvery"];
   const REPOOL=new Set(["pulseSpeed","emitEvery","pulseLen"]);
   const REGEOM=new Set(["arch","planeRise"]);
   const FMT={ arch:v=>Math.round(v*100)+"%", revealFade:v=>Math.round(v*100)+"%",
               archAlpha:v=>Math.round(v*100)+"%", archDim:v=>Math.round(v*100)+"%",
+              archFade:v=>v.toFixed(1)+"s", houseStroke:v=>v.toFixed(1)+"px",
               planeRise:v=>Math.round(v), swapAt:v=>Math.round(v*100)+"%",
               dashLen:v=>v+"px", dotGap:v=>v+"px", lineW:v=>v+"px",
               flowW:v=>v+"px", pulseLen:v=>Math.round(v)+"px",
@@ -1423,6 +1444,7 @@ if(UI){
   KEYS.forEach(k=>$("c_"+k).addEventListener("input",e=>{
     S[k]=parseFloat(e.target.value); $("o_"+k).textContent=FMT[k](+S[k]);
     if(REGEOM.has(k)){ for(const key in TRIM) delete TRIM[key]; buildLegs(); }
+    if(k==="houseStroke") tintHouse(S.bg);
     if(REPOOL.has(k)) buildPool();
     applyStyle(); sync(); draw();   // sync keeps the flow-aliasing hint current
   }));
