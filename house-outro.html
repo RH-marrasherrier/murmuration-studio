@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Glow studio</title>
+<title>House animation</title>
 <style>
   :root { --ink:#e8e8ea; --dim:#8b8b93; --line:#2a2a2e; --panel:#141416; }
   html, body { margin:0; padding:0; background:#060606; }
@@ -17,6 +17,34 @@
   #artHouse path { fill:var(--hfill); stroke:var(--hstroke); }
   #svg { position:absolute; inset:0; display:block; pointer-events:none; }
 
+  /* Outro timeline. "At" is measured from the moment the energy starts
+     flowing, which is the shaded region on the bar. */
+  #tl { position:fixed; left:0; right:0; bottom:0; z-index:5; background:#121214;
+        border-top:1px solid #2a2a2e; padding:10px 14px 12px;
+        font:12px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif; color:#e8e8ea; }
+  #tlbar { position:relative; height:58px; background:#0b0b0d; border:1px solid #2a2a2e;
+           border-radius:5px; overflow:hidden; }
+  #tlflow { position:absolute; top:0; bottom:0; background:#1b1d22; }
+  .tlseg { position:absolute; height:16px; border-radius:3px; font-size:10px;
+           white-space:nowrap; color:#0b0b0d; display:flex; align-items:center; }
+  .tlseg span { padding:0 5px; }
+  #seg_house { top:4px;  background:#9BA3B0; }
+  #seg_arch  { top:22px; background:#6f8fd8; }
+  #seg_dot   { top:40px; background:#3C77FF; }
+  #tlhead { position:absolute; top:0; bottom:0; width:1px; background:#fff; }
+  #tlscale { position:relative; height:14px; color:#8b8b93; font-size:10px; }
+  #tlscale i { position:absolute; transform:translateX(-50%); font-style:normal; }
+  #tlrows { display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:6px; align-items:center; }
+  .tlrow { display:flex; align-items:center; gap:7px; }
+  .tlrow b { font-weight:600; width:58px; color:#c9c9cf; }
+  .tlrow label { display:flex; align-items:center; gap:5px; color:#8b8b93; }
+  .tlrow input[type=range] { width:120px; accent-color:#3C77FF; }
+  .tlrow output { width:40px; text-align:right; color:#e8e8ea;
+                  font-variant-numeric:tabular-nums; }
+  .tlrow button { background:#1d1d21; color:#e8e8ea; border:1px solid #2a2a2e;
+                  border-radius:6px; padding:4px 12px; cursor:pointer; font:inherit; }
+  #tlnow { color:#8b8b93; font-variant-numeric:tabular-nums; }
+  body { padding-bottom:190px; }
   body.ui { background:#0b0b0d; font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
   body.ui #wrap { display:flex; gap:14px; padding:0 14px 14px; align-items:flex-start; }
   #vbar { display:none; }
@@ -64,6 +92,31 @@
 </head>
 <body>
 <div id="vbar"><span class="vlabel">Versions</span><span id="vlist"></span></div>
+<div id="tl">
+  <div id="tlbar">
+    <div id="tlflow"></div>
+    <div class="tlseg" id="seg_house"><span>house fades</span></div>
+    <div class="tlseg" id="seg_arch"><span>arches fade</span></div>
+    <div class="tlseg" id="seg_dot"><span>devices shrink</span></div>
+    <div id="tlhead"></div>
+  </div>
+  <div id="tlscale"></div>
+  <div id="tlrows">
+    <div class="tlrow"><b>House</b>
+      <label>at<input type="range" id="t_houseAt" min="0" max="8" step="0.1"><output id="v_houseAt"></output></label>
+      <label>over<input type="range" id="t_houseLen" min="0.1" max="5" step="0.1"><output id="v_houseLen"></output></label></div>
+    <div class="tlrow"><b>Arches</b>
+      <label>at<input type="range" id="t_archAt" min="0" max="8" step="0.1"><output id="v_archAt"></output></label>
+      <label>over<input type="range" id="t_archLen" min="0.1" max="5" step="0.1"><output id="v_archLen"></output></label></div>
+    <div class="tlrow"><b>Devices</b>
+      <label>at<input type="range" id="t_dotAt" min="0" max="8" step="0.1"><output id="v_dotAt"></output></label>
+      <label>over<input type="range" id="t_dotLen" min="0.1" max="5" step="0.1"><output id="v_dotLen"></output></label></div>
+    <div class="tlrow"><b>Dot size</b>
+      <label>px<input type="range" id="t_dotPx" min="1" max="12" step="0.5"><output id="v_dotPx"></output></label>
+      <label>hold<input type="range" id="t_outroHold" min="0" max="4" step="0.1"><output id="v_outroHold"></output></label></div>
+    <div class="tlrow"><button id="t_play">Pause</button><span id="tlnow"></span></div>
+  </div>
+</div>
 <div id="wrap">
   <div id="scaler">
     <div id="stage">
@@ -624,6 +677,15 @@ const D = {
      before the pulses, so the two overlap: the pulses begin while the line is
      still easing back rather than waiting for it. */
   archFade: 2.6,
+  /* Outro: a set time after the energy starts flowing, the house and arches
+     fade out and each device collapses to a dot. */
+  /* Each of the three can be timed on its own. "At" is seconds after the
+     energy starts flowing, so they survive a change of pace. */
+  houseAt: 3.0, houseLen: 1.2,
+  archAt:  3.0, archLen:  1.2,
+  dotAt:   3.0, dotLen:   1.2,
+  outroHold: 1.5,      // seconds held after the last one finishes
+  dotPx: 1,            // final on-screen size of each device, in stage px
   dotGap: 1,           // px of gap between dashes
   source: "devices",   // "loop" = pulses circling; "devices" = emitted by each device
   showLine: 1,         // 0 hides the circuit, leaving only the pulses
@@ -653,7 +715,13 @@ function applyPace(){
   const t6 = S.t.T1[1] + gap*e;
   S.t.T6  = [t6, t6 + archLen*e];
   S.flow  = [S.t.T6[1], S.t.T6[1] + flowLen*e];
-  S.total = S.flow[1];
+  const f = S.flow[0];
+  S.win = {
+    house: [f + S.houseAt, f + S.houseAt + S.houseLen],
+    arch:  [f + S.archAt,  f + S.archAt  + S.archLen],
+    dot:   [f + S.dotAt,   f + S.dotAt   + S.dotLen]
+  };
+  S.total = Math.max(S.win.house[1], S.win.arch[1], S.win.dot[1]) + S.outroHold;
 }
 
 const S = {
@@ -688,6 +756,10 @@ const S = {
   dashLen:num("dashLen"), dotGap:num("dotGap"), pulseSoft:num("pulseSoft"),
   revealFade:num("revealFade"), archAlpha:num("archAlpha"), archDim:num("archDim"),
   archFade:num("archFade"),
+  houseAt:num("houseAt"), houseLen:num("houseLen"),
+  archAt:num("archAt"),   archLen:num("archLen"),
+  dotAt:num("dotAt"),     dotLen:num("dotLen"),
+  outroHold:num("outroHold"), dotPx:num("dotPx"),
   devPlane:(q.get("devPlane")||D.devPlane), planeRise:num("planeRise"),
   energy:(q.get("energy")||D.energy),
   emitEvery:num("emitEvery"), pulseSpeed:num("pulseSpeed")
@@ -759,6 +831,37 @@ const seg = (T,a,b) => Math.max(0, Math.min(1, (T - a) / (b - a)));
 const lerp = (a,b,p) => a + (b - a) * p;
 const place = (el,x,y,op) => { el.style.left=x+"px"; el.style.top=y+"px"; el.style.opacity=op; };
 /* Vector layers move only in y, in art units, so a translate is enough. */
+
+/* Centre and width of each device in art units, so it can collapse in place.
+   Measured off the artwork rather than assumed. */
+const DEV_MID = {};
+function measureDevices(){
+  for (const id of ["solar","ac","battery","car"]) {
+    const el = $(id);
+    const t = el.getAttribute("transform");
+    el.removeAttribute("transform");
+    const b = el.getBBox();
+    DEV_MID[id] = {cx:b.x + b.width/2, cy:b.y + b.height/2, w:b.width};
+    if (t) el.setAttribute("transform", t);
+  }
+}
+
+/* Place a device: shift by dy, then collapse about its own centre. A scale of
+   1 leaves the transform identical to the plain translate. */
+function putDev(id, dy, op, scale){
+  const m = DEV_MID[id];
+  const t = (scale === 1 || !m)
+    ? "translate(0," + dy + ")"
+    : "translate(0," + dy + ") translate(" + m.cx + "," + m.cy + ") scale("
+      + scale + ") translate(" + (-m.cx) + "," + (-m.cy) + ")";
+  $(id).setAttribute("transform", t);
+  $(id).setAttribute("opacity", op);
+}
+
+/* The outro progress, needed in a couple of places before `out` is in scope. */
+/* Progress of each outro window at the frame being drawn. Shared because the
+   arches are painted in a different branch from the house. */
+const OUT = {house:0, arch:0, dot:0};
 
 const put = (el,dy,op) => {
   el.setAttribute("transform", "translate(0," + dy + ")");
@@ -982,6 +1085,7 @@ function buildPool(){
 }
 buildLegs();
 buildPool();
+measureDevices();
 
 function drawLegPulses(T){
   const fs = flowStartT();
@@ -1097,13 +1201,17 @@ function render(t){
   const lift=present?1:easeLift(seg(T,tt.T1[0],tt.T1[1]));
   // The art is authored at its lifted position, so each piece is simply pushed
   // back down by however much of its rise is still to come.
-  $("L_static").setAttribute("opacity", fade);
-  for(const k of S.pieces) put($("P_"+k), S.rise[k]*(1-lift), fade);
+  /* Outro: house and arches fade away while each device collapses to a dot.
+     `out` is 0 until it starts, 1 when it is done. */
+  for (const k in S.win) OUT[k] = easeInOut(seg(T, S.win[k][0], S.win[k][1]));
+  const houseOp = fade * (1 - OUT.house);
+  $("L_static").setAttribute("opacity", houseOp);
+  for(const k of S.pieces) put($("P_"+k), S.rise[k]*(1-lift), houseOp);
 
   const align=lift;   // devices travel on the roof's lift
   if(present){
     for(const id of ["solar","battery","car","ac"])
-      put($(id), S.rise[id] - (S.devPlane==="level" ? S.planeRise : S.rise[id]), 1);
+      putDev(id, S.rise[id] - (S.devPlane==="level" ? S.planeRise : S.rise[id]), 1, 1);
   } else {
     // Every device fades in where it lands, the way the HVAC always has: no
     // travel, just a 0.6s ramp starting at its own beat.
@@ -1113,8 +1221,17 @@ function render(t){
     // device sits at its closed height, and by align 1 it has risen either its
     // own keyframe amount or the shared one.
     const target=id => S.devPlane==="level" ? S.planeRise : S.rise[id];
+    /* Each device keeps its opacity through the outro and shrinks instead, so
+       it survives as a dot. dotPx is a stage measurement, hence the scale back
+       into art units. */
+    const dotScale = id => {
+      const m = DEV_MID[id];
+      if (!m || OUT.dot <= 0) return 1;
+      const target = (S.dotPx / ART_SCALE) / m.w;
+      return 1 + (target - 1) * OUT.dot;
+    };
     const fadeIn=(id,from,to)=>
-      put($(id), S.rise[id] - align*target(id), seg(T,from,to));
+      putDev(id, S.rise[id] - align*target(id), seg(T,from,to), dotScale(id));
     fadeIn("ac",     tt.T2[0], tt.T2[1]);
     fadeIn("car",    tt.T3[0], tt.T3[1]);
     fadeIn("solar",  tt.T4[0], tt.T4[1]);
@@ -1142,7 +1259,7 @@ function render(t){
   legG.setAttribute("display", arches ? "inline" : "none");
   if(cp<=0){ $("circuitG").style.opacity=0; }
   else if(arches){
-    $("circuitG").style.opacity=archNow;
+    $("circuitG").style.opacity=archNow*(1-OUT.arch);
     const dotLen = Math.max(0.01, S.dashLen);
     const dots = dotLen + " " + S.dotGap;
     // A dash pattern repeats every dotLen+gap, so stepping the offset by that
@@ -1204,7 +1321,7 @@ function render(t){
   }
   if(S.source==="devices"){
     $("flowG").setAttribute("opacity",0);
-    pulseG.setAttribute("opacity",1);
+    pulseG.setAttribute("opacity",1-OUT.arch);
     if(S.layout==="wires") drawDevicePulses(T); else drawLegPulses(T);
     return;
   }
@@ -1271,7 +1388,9 @@ function paintBg(v){
 paintBg(normBg(q.get("bg") ?? S.bg) || S.bg);
 const at=t=>render((SEG[0]+t*(SEG[1]-SEG[0]))/S.total);
 
-const UI = !q.has("t") && q.get("ui")!=="0";
+/* This page is the animation on its own — no panel. Add ?ui=1 to bring the
+   studio controls back if something needs tuning. */
+const UI = q.get("ui")==="1";
 if(q.has("t")){ at(parseFloat(q.get("t"))); }
 
 if(UI){
@@ -1550,6 +1669,77 @@ if(UI){
                  $("bar").style.display="none"; }
   });
 }
+</script>
+<script>
+(function(){
+  /* The timeline is its own small controller: it owns the six outro values and
+     redraws the bar whenever they change. It drives the same render(t) the rest
+     of the page uses, so nothing here is a separate source of truth. */
+  const TKEYS = ["houseAt","houseLen","archAt","archLen","dotAt","dotLen",
+                 "dotPx","outroHold"];
+  const fmt = k => k === "dotPx" ? S[k].toFixed(1) + "px" : S[k].toFixed(1) + "s";
+  let playing = true, t0 = performance.now();
+
+  function layout(){
+    const total = S.total, bar = document.getElementById("tlbar").clientWidth;
+    const px = t => Math.max(0, Math.min(bar, t / total * bar));
+    const flow = document.getElementById("tlflow");
+    flow.style.left  = px(S.flow[0]) + "px";
+    flow.style.width = (bar - px(S.flow[0])) + "px";
+    for (const k of ["house","arch","dot"]) {
+      const w = S.win[k], el = document.getElementById("seg_" + k);
+      el.style.left  = px(w[0]) + "px";
+      el.style.width = Math.max(3, px(w[1]) - px(w[0])) + "px";
+    }
+    const sc = document.getElementById("tlscale");
+    sc.textContent = "";
+    for (let t = 0; t <= total + 0.001; t += 2) {
+      const i = document.createElement("i");
+      i.textContent = t.toFixed(0) + "s";
+      i.style.left = px(t) + "px";
+      sc.appendChild(i);
+    }
+    for (const k of TKEYS) {
+      document.getElementById("t_" + k).value = S[k];
+      document.getElementById("v_" + k).textContent = fmt(k);
+    }
+  }
+
+  for (const k of TKEYS) {
+    document.getElementById("t_" + k).addEventListener("input", e => {
+      S[k] = parseFloat(e.target.value);
+      applyPace();                      // recomputes S.win and S.total
+      layout();
+      if (!playing) draw();
+    });
+  }
+  document.getElementById("t_play").addEventListener("click", e => {
+    playing = !playing;
+    e.target.textContent = playing ? "Pause" : "Play";
+    t0 = performance.now() - (window.__tnow || 0) * 1000;
+  });
+
+  /* The bar's width is not final when this script first runs, so re-layout
+     whenever it changes rather than trusting the first measurement. */
+  let lastW = 0;
+  (function tick(now){
+    const bw = document.getElementById("tlbar").clientWidth;
+    if (bw !== lastW) { lastW = bw; layout(); }
+    if (playing) {
+      const t = ((now - t0) / 1000) % S.total;
+      window.__tnow = t;
+      render(t / S.total);
+      const bar = document.getElementById("tlbar").clientWidth;
+      document.getElementById("tlhead").style.left = (t / S.total * bar) + "px";
+      document.getElementById("tlnow").textContent = t.toFixed(2) + "s of "
+        + S.total.toFixed(2) + "s";
+    }
+    requestAnimationFrame(tick);
+  })(performance.now());
+
+  addEventListener("resize", layout);
+  requestAnimationFrame(layout);
+})();
 </script>
 </body>
 </html>

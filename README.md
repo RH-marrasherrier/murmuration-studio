@@ -6,8 +6,12 @@ dashed arches.
 
 The illustration is inline SVG, exported from the Everyday Brand Kit file and
 split into layers, so it is crisp at any size and the fills can be recoloured
-directly. `assets/house-anim-v2/` keeps the layer sources; nothing there is
-loaded at runtime.
+directly. `assets/house-anim-v3/` keeps the house layer sources and
+`assets/house-anim-v2/` the devices; nothing in either is loaded at runtime.
+
+`house-outro.html` is the same animation without the controls, plus an outro
+and a timeline bar for scheduling it. `handoff/` is the packaged version for
+web — see its own README.
 
 Sliders change the animation live in the browser; the export button runs the
 real render pipeline at full quality with whatever is on screen.
@@ -24,6 +28,37 @@ python3 /tmp/glow-studio/studio-server.py
 Then open <http://127.0.0.1:3477/>.
 
 Requires `python3`, `ffmpeg`, and Google Chrome at the standard macOS path.
+
+## The house
+
+Every moving piece is the **same artwork in both keyframes**, repositioned —
+so the whole thing is pure vertical translation. There are no art swaps, no
+clipping and no staged states, which is what made earlier versions of this
+fight back. Eight layers: one `static` group that never moves (base, lawn,
+floor, trees) and seven that rise.
+
+| piece | rise, art units |
+|---|---|
+| top roof 3 | 456.7 |
+| bottom roof 3 | 421.7 |
+| top roof 2 | 380.9 |
+| bottom roof 2 | 332.0 |
+| box 3 | 317.2 |
+| top roof 1 | 293.5 |
+| bottom roof 1 | 230.5 |
+
+Read straight off the two frames' layer coordinates rather than measured. The
+four devices fade in one at a time on the closed house, then rise on the same
+lift as the roof.
+
+**House pace** and **energy pace** scale their halves of the timeline
+independently, each off the authored values, so retiming the house never
+changes how long the energy runs. **Lift ease** is the exponent of the lift's
+ease-in-out; 3 is a plain cubic.
+
+As the arches arrive the house steps back by shifting its line colour to
+`#5D6876` rather than dropping opacity, so the linework keeps its weight and
+the fills stay solid occluders.
 
 ## Presets
 

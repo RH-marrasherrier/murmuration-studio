@@ -1,0 +1,34 @@
+{
+ "static": {
+  "paths": 128,
+  "bytes": 24355
+ },
+ "box_3": {
+  "paths": 6,
+  "bytes": 1233
+ },
+ "bottom_roof_1": {
+  "paths": 5,
+  "bytes": 857
+ },
+ "top_roof_1": {
+  "paths": 6,
+  "bytes": 1018
+ },
+ "bottom_roof_2": {
+  "paths": 5,
+  "bytes": 845
+ },
+ "top_roof_2": {
+  "paths": 5,
+  "bytes": 892
+ },
+ "bottom_roof_3": {
+  "paths": 5,
+  "bytes": 845
+ },
+ "top_roof_3": {
+  "paths": 6,
+  "bytes": 1032
+ }
+}
