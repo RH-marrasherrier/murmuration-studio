@@ -2,6 +2,8 @@
 *.gif
 *.mp4
 *.params.json
+# ...except the handoff, where the video IS the deliverable
+!handoff/*.mp4
 # transient capture dirs
 frames/
 .DS_Store
