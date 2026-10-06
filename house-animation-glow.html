@@ -1265,10 +1265,28 @@ function mixHex(a, b, p){
 }
 function paintBg(v){
   S.bg = v;
-  $("stage").style.background = v==="none" ? "transparent" : v;
+  const clear = v === "none";
+  $("stage").style.background = clear ? "transparent" : v;
+  /* html and body carry #060606 from the stylesheet, which would otherwise
+     paint over Chrome's transparent backdrop and defeat an alpha capture. */
+  const page = clear ? "transparent" : "";
+  document.documentElement.style.background = page;
+  document.body.style.background = page;
   tintHouse(v);
 }
 paintBg(normBg(q.get("bg") ?? S.bg) || S.bg);
+/* The fills normally follow the background, because they exist to occlude the
+   layers behind them. On a transparent render that leaves a near-black house
+   body sitting on the alpha, so ?fill= sets them independently: a hex to keep
+   solid occluders in some other colour, or "none" for a hollow wireframe.
+   ?stroke= likewise, since the automatic light/dark flip reads the background
+   and there isn't one. */
+{
+  const f = q.get("fill"), k = normBg(q.get("stroke") ?? "");
+  if (f) document.documentElement.style.setProperty("--hfill",
+    f.trim().toLowerCase() === "none" ? "transparent" : (normBg(f) || f));
+  if (k) STROKE_BASE = k;
+}
 const at=t=>render((SEG[0]+t*(SEG[1]-SEG[0]))/S.total);
 
 const UI = !q.has("t") && q.get("ui")!=="0";

@@ -159,6 +159,21 @@ at 1, which keeps the fills opaque occluders — a blend mode would let lower
 layers show through the roof planes. Above 50% background luminance the stroke
 end flips dark, or the house would dissolve into a light backdrop.
 
+On a transparent render there is no background for the fills to follow, so they
+stay the last colour they had and the house keeps a near-black body sitting on
+the alpha. `?fill=` and `?stroke=` set those two independently of `?bg=`:
+
+| | fill | stroke | reads as |
+|---|---|---|---|
+| any backdrop | `none` | — | hollow wireframe, no occlusion |
+| light slide | `#ffffff` | `#2B3138` | solid line drawing |
+
+`?fill=none` is the only genuinely background-independent option, but it costs
+the occlusion: the staircase and the lower walls show straight through the roof
+planes, so the layers stop reading as stacked. Filling in the destination's own
+colour keeps the depth and still leaves nothing outside the silhouette — that
+is the better trade whenever the background colour is known.
+
 **Device heights** — *Keyframe* raises each device its own amount, read off the
 two source frames (solar 289, A/C 305, battery 248, car 175 art units). *One
 plane* raises them all by the same amount instead, set by **plane height**, so
@@ -199,6 +214,8 @@ The same file serves the live studio and the renderer:
 | `?ui=0` | suppress the panel |
 | `?from=&to=` | render a slice of the timeline |
 | `?bg=%23060606` / `?bg=none` | backdrop, or transparent |
+| `?fill=%23ffffff` / `?fill=none` | house fills, independent of the backdrop |
+| `?stroke=%232B3138` | house linework, overriding the light/dark flip |
 | `?energy=pulses\|flow\|off` | how energy reads |
 | `?layout=ring\|spokes\|wires` | connection geometry |
 | `?arch=&dashLen=&dotGap=&pulseSpeed=…` | every line and pulse parameter |

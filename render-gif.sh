@@ -96,10 +96,16 @@ if [ "$BG" = "none" ]; then
   # GIF alpha is 1-bit: reserve a palette slot for transparency and cut every
   # pixel below the threshold. Partial coverage cannot survive, so edges are
   # harder than on a solid background — rendering large helps a lot.
+  #
+  # ALPHA_T is that cut. 96 suits art whose strokes sit on an opaque fill. With
+  # no fill behind them a 1px stroke is almost all partial coverage, and 96
+  # deletes most of it — downscaling makes it worse, since lanczos spreads one
+  # stroke over two dimmer rows. Measured on the hollow house at 700px: 96 left
+  # the linework in fragments, 16 kept it continuous.
   ffmpeg -y -framerate "$FPS" -i "$TMP/%04d.png" \
     -filter_complex "[0:v]$SCALE_F,split[a][b];\
 [a]palettegen=stats_mode=full:reserve_transparent=1:max_colors=255[p];\
-[b][p]paletteuse=dither=none:alpha_threshold=96" \
+[b][p]paletteuse=dither=none:alpha_threshold=${ALPHA_T:-96}" \
     -gifflags -offsetting -loop "$LOOP" "$DIR/$OUT" 2>/dev/null
 else
   ffmpeg -y -framerate "$FPS" -i "$TMP/%04d.png" \
